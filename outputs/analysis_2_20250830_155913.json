@@ -1,0 +1,459 @@
+{
+  "input_image": "made_pictures/2.png",
+  "meta": {
+    "top_k": 1,
+    "min_score": 0.0
+  },
+  "parts": {
+    "hair": {
+      "extracted": {
+        "summary": "Long wavy hair with bangs",
+        "tags": [
+          "long-hair",
+          "wavy-hair",
+          "bangs",
+          "layered-hair",
+          "blonde-hair"
+        ],
+        "query_phrase": "Long wavy hair with bangs, long-hair, wavy-hair, bangs, layered-hair, blonde-hair",
+        "raw": {
+          "summary": "Long wavy hair with bangs",
+          "attributes": {
+            "length": {
+              "value": "long",
+              "confidence": 0.95
+            },
+            "parting": {
+              "value": "center-part",
+              "confidence": 0.8
+            },
+            "bangs": {
+              "value": "bangs-front",
+              "confidence": 0.9
+            },
+            "curl_pattern": {
+              "value": "wavy",
+              "confidence": 0.9
+            },
+            "volume": {
+              "value": "medium-volume",
+              "confidence": 0.85
+            },
+            "layering": {
+              "value": "layered",
+              "confidence": 0.7
+            },
+            "ends": {
+              "value": "tapered",
+              "confidence": 0.75
+            },
+            "color_primary": {
+              "value": "blonde",
+              "confidence": 0.8
+            }
+          },
+          "tags": [
+            "long-hair",
+            "wavy-hair",
+            "bangs",
+            "layered-hair",
+            "blonde-hair"
+          ],
+          "notes": "The hairstyle features long, wavy hair with front bangs. The hair appears to be layered and has a blonde color.",
+          "confidence_overall": 0.85
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "hair_262",
+            "part_num": 262,
+            "category": "hair",
+            "score": 0.07311128331845142
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "hair_262",
+        "part_num": 262,
+        "score": 0.07311128331845142
+      }
+    },
+    "eye": {
+      "extracted": {
+        "summary": "almond-shaped eyes with medium openness",
+        "tags": [
+          "almond",
+          "medium",
+          "neutral",
+          "medium lash",
+          "medium brow gap",
+          "medium iris visible"
+        ],
+        "query_phrase": "almond-shaped eyes with medium openness, almond, medium, neutral, medium lash, medium brow gap, medium iris visible",
+        "raw": {
+          "summary": "almond-shaped eyes with medium openness",
+          "attributes": {
+            "shape": {
+              "value": "almond",
+              "confidence": 0.9
+            },
+            "size": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "tilt": {
+              "value": "neutral",
+              "confidence": 0.7
+            },
+            "openness": {
+              "value": "medium",
+              "confidence": 0.85
+            },
+            "lash": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "brow_gap": {
+              "value": "medium",
+              "confidence": 0.75
+            },
+            "iris_visible": {
+              "value": "medium",
+              "confidence": 0.8
+            }
+          },
+          "tags": [
+            "almond",
+            "medium",
+            "neutral",
+            "medium lash",
+            "medium brow gap",
+            "medium iris visible"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "eye_92",
+            "part_num": 92,
+            "category": "eye",
+            "score": 0.09813544209190629
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "eye_92",
+        "part_num": 92,
+        "score": 0.09813544209190629
+      }
+    },
+    "eyebrow": {
+      "extracted": {
+        "summary": "Medium, slightly arched eyebrows",
+        "tags": [
+          "well-groomed",
+          "natural-looking",
+          "defined",
+          "feminine"
+        ],
+        "query_phrase": "Medium, slightly arched eyebrows, well-groomed, natural-looking, defined, feminine",
+        "raw": {
+          "summary": "Medium, slightly arched eyebrows",
+          "attributes": {
+            "thickness": {
+              "value": "medium",
+              "confidence": 0.9
+            },
+            "shape": {
+              "value": "slight-arch",
+              "confidence": 0.8
+            },
+            "length": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "density": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "tail": {
+              "value": "medium",
+              "confidence": 0.7
+            }
+          },
+          "tags": [
+            "well-groomed",
+            "natural-looking",
+            "defined",
+            "feminine"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "eyebrow_95",
+            "part_num": 95,
+            "category": "eyebrow",
+            "score": 0.09775330992548563
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "eyebrow_95",
+        "part_num": 95,
+        "score": 0.09775330992548563
+      }
+    },
+    "nose": {
+      "extracted": {
+        "summary": "Asian woman with a medium nose",
+        "tags": [
+          "asian",
+          "woman",
+          "medium nose",
+          "rounded tip",
+          "medium bridge"
+        ],
+        "query_phrase": "Asian woman with a medium nose, asian, woman, medium nose, rounded tip, medium bridge",
+        "raw": {
+          "summary": "Asian woman with a medium nose",
+          "attributes": {
+            "bridge": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "width": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "tip": {
+              "value": "rounded",
+              "confidence": 0.7
+            },
+            "nostrils": {
+              "value": "medium",
+              "confidence": 0.6
+            },
+            "length": {
+              "value": "medium",
+              "confidence": 0.7
+            }
+          },
+          "tags": [
+            "asian",
+            "woman",
+            "medium nose",
+            "rounded tip",
+            "medium bridge"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "nose_48",
+            "part_num": 48,
+            "category": "nose",
+            "score": 0.09870277388238552
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "nose_48",
+        "part_num": 48,
+        "score": 0.09870277388238552
+      }
+    },
+    "mouth": {
+      "extracted": {
+        "summary": "thin lips",
+        "tags": [
+          "thin lips",
+          "straight lips",
+          "neutral corners"
+        ],
+        "query_phrase": "thin lips, thin lips, straight lips, neutral corners",
+        "raw": {
+          "summary": "thin lips",
+          "attributes": {
+            "fullness": {
+              "value": "thin",
+              "confidence": 0.9
+            },
+            "shape": {
+              "value": "straight",
+              "confidence": 0.7
+            },
+            "width": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "corners": {
+              "value": "neutral",
+              "confidence": 0.7
+            }
+          },
+          "tags": [
+            "thin lips",
+            "straight lips",
+            "neutral corners"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "mouse_80",
+            "part_num": 80,
+            "category": "mouse",
+            "score": 0.0791626005372215
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "mouse_80",
+        "part_num": 80,
+        "score": 0.0791626005372215
+      }
+    },
+    "ear": {
+      "extracted": {
+        "summary": "Ears with attached lobes and no piercings",
+        "tags": [
+          "ears",
+          "attached lobes",
+          "no piercings"
+        ],
+        "query_phrase": "Ears with attached lobes and no piercings, ears, attached lobes, no piercings",
+        "raw": {
+          "summary": "Ears with attached lobes and no piercings",
+          "attributes": {
+            "size": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "lobe": {
+              "value": "attached",
+              "confidence": 0.9
+            },
+            "protrusion": {
+              "value": "low",
+              "confidence": 0.7
+            },
+            "piercings": {
+              "value": "none",
+              "confidence": 1.0
+            }
+          },
+          "tags": [
+            "ears",
+            "attached lobes",
+            "no piercings"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "ear_17",
+            "part_num": 17,
+            "category": "ear",
+            "score": 0.07893355164846375
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "ear_17",
+        "part_num": 17,
+        "score": 0.07893355164846375
+      }
+    },
+    "outline": {
+      "extracted": {
+        "summary": "Round face with soft features",
+        "tags": [
+          "soft features",
+          "round face",
+          "asian",
+          "female",
+          "brown hair",
+          "bangs"
+        ],
+        "query_phrase": "Round face with soft features, soft features, round face, asian, female, brown hair, bangs",
+        "raw": {
+          "summary": "Round face with soft features",
+          "attributes": {
+            "shape": {
+              "value": "round",
+              "confidence": 0.9
+            },
+            "jawline": {
+              "value": "soft",
+              "confidence": 0.8
+            },
+            "chin": {
+              "value": "rounded",
+              "confidence": 0.9
+            }
+          },
+          "tags": [
+            "soft features",
+            "round face",
+            "Asian",
+            "female",
+            "brown hair",
+            "bangs"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "outline_19",
+            "part_num": 19,
+            "category": "outline",
+            "score": 0.06708037674476033
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "outline_19",
+        "part_num": 19,
+        "score": 0.06708037674476033
+      }
+    }
+  },
+  "compact": {
+    "hair": {
+      "part_num": 262,
+      "score": 0.07311128331845142
+    },
+    "eye": {
+      "part_num": 92,
+      "score": 0.09813544209190629
+    },
+    "eyebrow": {
+      "part_num": 95,
+      "score": 0.09775330992548563
+    },
+    "nose": {
+      "part_num": 48,
+      "score": 0.09870277388238552
+    },
+    "mouth": {
+      "part_num": 80,
+      "score": 0.0791626005372215
+    },
+    "ear": {
+      "part_num": 17,
+      "score": 0.07893355164846375
+    },
+    "outline": {
+      "part_num": 19,
+      "score": 0.06708037674476033
+    }
+  }
+}

@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Portrait Parts Picker (Cloud Run)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Meiryo, Arial, sans-serif; }
+    body { margin: 24px; color: #111; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.04);}
+    .row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .thumb { width: 160px; display:flex; flex-direction: column; gap: 6px; align-items: center; }
+    .thumb img { width: 160px; height: 160px; object-fit: contain; border: 1px solid #eee; border-radius: 8px; background: #fff; }
+    .muted { color: #666; font-size: 12px; }
+    button { padding: 10px 16px; border-radius: 8px; border: 1px solid #ddd; background: #111; color: #fff; cursor: pointer; }
+    button[disabled] { opacity: .6; cursor: not-allowed; }
+    .bar { height: 8px; border-radius: 8px; background: #eee; overflow: hidden; }
+    .bar > div { height: 100%; width: 0%; background: #4f46e5; transition: width .3s ease; }
+    .status { margin-top: 12px; padding: 12px; border-radius: 8px; background: #f8f9fa; border: 1px solid #e9ecef; }
+    .status.processing { background: #e3f2fd; border-color: #90caf9; }
+    .status.completed { background: #e8f5e8; border-color: #a5d6a7; }
+    .status.skipped { background: #fff3e0; border-color: #ffcc02; }
+    .status.error { background: #ffebee; border-color: #ef5350; }
+    .part-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .part-item { padding: 4px 8px; border-radius: 4px; font-size: 12px; background: #f0f0f0; }
+    .part-item.processing { background: #2196f3; color: white; }
+    .part-item.completed { background: #4caf50; color: white; }
+    .part-item.skipped { background: #ff9800; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Portrait Parts Picker</h1>
+
+  <div class="card">
+    <form id="form">
+      <input type="file" id="image" name="image" accept="image/*" required />
+      <button type="submit" id="btn">分析開始</button>
+    </form>
+    <div class="bar" style="margin-top:12px;"><div id="prog"></div></div>
+    <div class="muted" id="msg" style="margin-top:8px;">画像を選んで「分析開始」を押してください。</div>
+    <div id="status-container" style="display:none;" class="status">
+      <div id="current-status">準備中...</div>
+      <div class="part-list" id="part-list"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px;">
+    <h2>結果</h2>
+    <div style="margin-bottom:12px;">
+      <button id="compose-btn" style="display:none;" disabled>パーツを合成する</button>
+    </div>
+    <div id="result">
+      <div class="muted">まだ結果はありません。</div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const btn = document.getElementById('btn');
+    const msg = document.getElementById('msg');
+    const prog = document.getElementById('prog');
+    const result = document.getElementById('result');
+    const statusContainer = document.getElementById('status-container');
+    const currentStatus = document.getElementById('current-status');
+    const partList = document.getElementById('part-list');
+    const composeBtn = document.getElementById('compose-btn');
+
+    // グローバル変数で分析結果を保持
+    let analysisResult = null;
+
+    // パーツの日本語名
+    const partNames = {
+      hair: '髪型', eye: '目', eyebrow: '眉毛', nose: '鼻', mouth: '口',
+      ear: '耳', outline: '輪郭', acc: 'アクセサリー', beard: 'ひげ', 
+      glasses: 'メガネ', extras: 'その他', wrinkles: 'しわ'
+    };
+
+    // パーツアイテムを作成・更新する関数
+    function updatePartItem(category, status, details = {}) {
+      let item = document.getElementById(`part-${category}`);
+      if (!item) {
+        item = document.createElement('div');
+        item.id = `part-${category}`;
+        item.className = 'part-item';
+        item.textContent = partNames[category] || category;
+        partList.appendChild(item);
+      }
+      
+      item.className = `part-item ${status}`;
+      if (status === 'completed' && details.part_id) {
+        item.textContent = `${partNames[category] || category} ✓`;
+        item.title = `${details.part_id} (score: ${details.score?.toFixed(3) || 'N/A'})`;
+      } else if (status === 'skipped') {
+        item.textContent = `${partNames[category] || category} ✗`;
+        item.title = `スキップ: ${details.reason || '理由不明'}`;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = document.getElementById('image').files[0];
+      if (!file) { alert('画像を選択してください'); return; }
+
+      // 即時ローカルプレビュー
+      const localURL = URL.createObjectURL(file);
+      result.innerHTML = `
+        <div class="row">
+          <div class="thumb">
+            <img id="inputPreview" src="${localURL}" alt="input-local" />
+            <div class="muted">入力画像（ローカルプレビュー）</div>
+          </div>
+        </div>
+      `;
+
+      btn.disabled = true;
+      msg.textContent = 'アップロード中...';
+      statusContainer.style.display = 'block';
+      statusContainer.className = 'status processing';
+      currentStatus.textContent = '画像をアップロード中...';
+      partList.innerHTML = '';
+      prog.style.width = '20%';
+
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+
+        // /analyzeにPOSTしてstream_idを取得
+        const res = await fetch('/analyze', { method: 'POST', body: fd });
+        const json = await res.json();
+        
+        if (!json.ok) throw new Error(json.error || 'failed');
+
+        prog.style.width = '40%';
+        currentStatus.textContent = '分析中...';
+
+        // Server-Sent Eventsでリアルタイム進捗受信
+        const eventSource = new EventSource(`/stream/${json.stream_id}`);
+        
+        eventSource.onmessage = function(event) {
+          const data = JSON.parse(event.data);
+          console.log('SSE:', data);
+
+          if (data.status === 'started') {
+            currentStatus.textContent = '分析開始しました';
+            prog.style.width = '50%';
+          } else if (data.status === 'processing') {
+            currentStatus.textContent = `${partNames[data.current_part] || data.current_part}を分析中... (${data.progress}/${data.total})`;
+            prog.style.width = `${50 + (data.percentage || 0) * 0.4}%`;
+            updatePartItem(data.current_part, 'processing');
+          } else if (data.status === 'completed') {
+            updatePartItem(data.current_part, 'completed', data);
+          } else if (data.status === 'skipped') {
+            updatePartItem(data.current_part, 'skipped', data);
+          } else if (data.status === 'composing') {
+            currentStatus.textContent = 'パーツ合成を実行中...';
+            prog.style.width = '95%';
+          } else if (data.status === 'finished') {
+            // 分析完了
+            eventSource.close();
+            msg.textContent = '完了！';
+            prog.style.width = '100%';
+            currentStatus.textContent = '分析完了';
+            statusContainer.className = 'status completed';
+
+            // 分析結果をグローバル変数に保存
+            analysisResult = data;
+
+            // 入力画像URLを更新
+            const prev = document.getElementById('inputPreview');
+            if (prev && data.input_image_url) prev.src = data.input_image_url;
+
+            // パーツ結果を描画
+            if (data.parts && data.parts.length > 0) {
+              const row = document.createElement('div');
+              row.className = 'row';
+              data.parts.forEach(p => {
+                const el = document.createElement('div');
+                el.className = 'thumb';
+                el.innerHTML = `
+                  <img src="${p.image_url}" alt="${p.category}_${p.part_num}" />
+                  <div class="muted">${partNames[p.category] || p.category} #${p.part_num} / score=${p.score.toFixed(3)}</div>
+                `;
+                row.appendChild(el);
+              });
+              result.appendChild(row);
+
+              // 合成画像がある場合は表示
+              if (data.composed_image_url) {
+                const composedRow = document.createElement('div');
+                composedRow.className = 'row';
+                composedRow.style.marginTop = '24px';
+                composedRow.innerHTML = `
+                  <div class="thumb">
+                    <img src="${data.composed_image_url}" alt="composed_result" style="width: 200px; height: 200px;" />
+                    <div class="muted">合成結果</div>
+                  </div>
+                `;
+                result.appendChild(composedRow);
+              }
+
+              if (data.raw_json_url) {
+                const raw = document.createElement('div');
+                raw.style.marginTop = '8px';
+                raw.innerHTML = `<a href="${data.raw_json_url}" target="_blank">JSONを見る</a>`;
+                result.appendChild(raw);
+              }
+
+              // 合成ボタンを表示・有効化（ただし自動合成された場合は不要）
+              if (!data.composed_image_url) {
+                composeBtn.style.display = 'inline-block';
+                composeBtn.disabled = false;
+              }
+            } else {
+              currentStatus.textContent = '分析完了（該当するパーツが見つかりませんでした）';
+            }
+
+            btn.disabled = false;
+            setTimeout(() => prog.style.width = '0%', 1200);
+          } else if (data.status === 'error') {
+            eventSource.close();
+            throw new Error(data.error || '処理エラー');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          throw new Error('ストリーム接続エラー');
+        };
+
+      } catch (err) {
+        console.error(err);
+        msg.textContent = 'エラーが発生しました';
+        currentStatus.textContent = `エラー: ${err.message}`;
+        statusContainer.className = 'status error';
+        prog.style.width = '0%';
+        btn.disabled = false;
+      }
+    });
+
+    // 合成ボタンのクリックイベント
+    composeBtn.addEventListener('click', async () => {
+      if (!analysisResult || !analysisResult.parts) {
+        alert('分析結果がありません');
+        return;
+      }
+
+      composeBtn.disabled = true;
+      composeBtn.textContent = '合成中...';
+
+      try {
+        const composeData = {
+          input_image_url: analysisResult.input_image_url,
+          parts: analysisResult.parts
+        };
+
+        const response = await fetch('/compose', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(composeData)
+        });
+
+        const result = await response.json();
+
+        if (result.ok) {
+          // 合成結果を表示
+          const composedRow = document.createElement('div');
+          composedRow.className = 'row';
+          composedRow.style.marginTop = '20px';
+          composedRow.innerHTML = `
+            <div style="width: 100%; text-align: center;">
+              <h3>合成結果</h3>
+              <img src="${result.composed_image_url}" alt="合成結果" style="max-width: 400px; border: 2px solid #4caf50; border-radius: 8px;" />
+            </div>
+          `;
+          result.appendChild(composedRow);
+
+          composeBtn.textContent = '合成完了';
+        } else {
+          throw new Error(result.error || '合成に失敗しました');
+        }
+
+      } catch (error) {
+        console.error('合成エラー:', error);
+        alert(`合成エラー: ${error.message}`);
+        composeBtn.textContent = 'パーツを合成する';
+      } finally {
+        composeBtn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>

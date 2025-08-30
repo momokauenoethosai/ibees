@@ -1,0 +1,459 @@
+{
+  "input_image": "/Users/uenomomoka/Desktop/Projects/vision_rag/uploads/upload_20250830_170700.png",
+  "meta": {
+    "top_k": 1,
+    "min_score": 0.0
+  },
+  "parts": {
+    "hair": {
+      "extracted": {
+        "summary": "High pigtails",
+        "tags": [
+          "high-pigtails",
+          "straight-hair",
+          "center-part",
+          "long-hair",
+          "black-hair"
+        ],
+        "query_phrase": "High pigtails, high-pigtails, straight-hair, center-part, long-hair, black-hair",
+        "raw": {
+          "summary": "High pigtails",
+          "attributes": {
+            "length": {
+              "value": "long",
+              "confidence": 0.9
+            },
+            "parting": {
+              "value": "center-part",
+              "confidence": 0.9
+            },
+            "bangs": {
+              "value": "bangs-none",
+              "confidence": 0.9
+            },
+            "curl_pattern": {
+              "value": "straight",
+              "confidence": 0.9
+            },
+            "volume": {
+              "value": "medium-volume",
+              "confidence": 0.7
+            },
+            "layering": {
+              "value": "one-length",
+              "confidence": 0.8
+            },
+            "ends": {
+              "value": "blunt",
+              "confidence": 0.7
+            },
+            "color_primary": {
+              "value": "black",
+              "confidence": 0.9
+            }
+          },
+          "tags": [
+            "high-pigtails",
+            "straight-hair",
+            "center-part",
+            "long-hair",
+            "black-hair"
+          ],
+          "notes": "The hair is styled into high pigtails with a center part. The hair appears to be straight and of one length.",
+          "confidence_overall": 0.85
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "hair_188",
+            "part_num": 188,
+            "category": "hair",
+            "score": 0.13441092620641576
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "hair_188",
+        "part_num": 188,
+        "score": 0.13441092620641576
+      }
+    },
+    "eye": {
+      "extracted": {
+        "summary": "East Asian eyes with neutral tilt",
+        "tags": [
+          "monolid",
+          "medium",
+          "neutral",
+          "medium openness",
+          "medium lashes",
+          "medium brow gap",
+          "medium iris visibility"
+        ],
+        "query_phrase": "East Asian eyes with neutral tilt, monolid, medium, neutral, medium openness, medium lashes, medium brow gap, medium iris visibility",
+        "raw": {
+          "summary": "East Asian eyes with neutral tilt",
+          "attributes": {
+            "shape": {
+              "value": "monolid",
+              "confidence": 0.9
+            },
+            "size": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "tilt": {
+              "value": "neutral",
+              "confidence": 0.85
+            },
+            "openness": {
+              "value": "medium",
+              "confidence": 0.75
+            },
+            "lash": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "brow_gap": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "iris_visible": {
+              "value": "medium",
+              "confidence": 0.8
+            }
+          },
+          "tags": [
+            "monolid",
+            "medium",
+            "neutral",
+            "medium openness",
+            "medium lashes",
+            "medium brow gap",
+            "medium iris visibility"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "eye_20",
+            "part_num": 20,
+            "category": "eye",
+            "score": 0.09613669145743647
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "eye_20",
+        "part_num": 20,
+        "score": 0.09613669145743647
+      }
+    },
+    "eyebrow": {
+      "extracted": {
+        "summary": "Medium, angled eyebrows",
+        "tags": [
+          "angled eyebrows",
+          "defined eyebrows",
+          "groomed eyebrows"
+        ],
+        "query_phrase": "Medium, angled eyebrows, angled eyebrows, defined eyebrows, groomed eyebrows",
+        "raw": {
+          "summary": "Medium, angled eyebrows",
+          "attributes": {
+            "thickness": {
+              "value": "medium",
+              "confidence": 0.9
+            },
+            "shape": {
+              "value": "angled",
+              "confidence": 0.8
+            },
+            "length": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "density": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "tail": {
+              "value": "medium",
+              "confidence": 0.6
+            }
+          },
+          "tags": [
+            "angled eyebrows",
+            "defined eyebrows",
+            "groomed eyebrows"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "eyebrow_81",
+            "part_num": 81,
+            "category": "eyebrow",
+            "score": 0.09774932503165279
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "eyebrow_81",
+        "part_num": 81,
+        "score": 0.09774932503165279
+      }
+    },
+    "nose": {
+      "extracted": {
+        "summary": "Asian nose with a rounded tip",
+        "tags": [
+          "asian",
+          "rounded tip",
+          "small",
+          "medium bridge"
+        ],
+        "query_phrase": "Asian nose with a rounded tip, asian, rounded tip, small, medium bridge",
+        "raw": {
+          "summary": "Asian nose with a rounded tip",
+          "attributes": {
+            "bridge": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "width": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "tip": {
+              "value": "rounded",
+              "confidence": 0.9
+            },
+            "nostrils": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "length": {
+              "value": "short",
+              "confidence": 0.6
+            }
+          },
+          "tags": [
+            "asian",
+            "rounded tip",
+            "small",
+            "medium bridge"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "nose_81",
+            "part_num": 81,
+            "category": "nose",
+            "score": 0.13185073365060637
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "nose_81",
+        "part_num": 81,
+        "score": 0.13185073365060637
+      }
+    },
+    "mouth": {
+      "extracted": {
+        "summary": "Medium, straight lips",
+        "tags": [
+          "straight lips",
+          "medium fullness",
+          "neutral corners"
+        ],
+        "query_phrase": "Medium, straight lips, straight lips, medium fullness, neutral corners",
+        "raw": {
+          "summary": "Medium, straight lips",
+          "attributes": {
+            "fullness": {
+              "value": "medium",
+              "confidence": 0.9
+            },
+            "shape": {
+              "value": "straight",
+              "confidence": 0.8
+            },
+            "width": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "corners": {
+              "value": "neutral",
+              "confidence": 0.6
+            }
+          },
+          "tags": [
+            "straight lips",
+            "medium fullness",
+            "neutral corners"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "mouse_80",
+            "part_num": 80,
+            "category": "mouse",
+            "score": 0.06997682901133043
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "mouse_80",
+        "part_num": 80,
+        "score": 0.06997682901133043
+      }
+    },
+    "ear": {
+      "extracted": {
+        "summary": "ears with small size and attached lobes",
+        "tags": [
+          "small ears",
+          "attached lobes",
+          "low protrusion",
+          "single piercing"
+        ],
+        "query_phrase": "ears with small size and attached lobes, small ears, attached lobes, low protrusion, single piercing",
+        "raw": {
+          "summary": "ears with small size and attached lobes",
+          "attributes": {
+            "size": {
+              "value": "small",
+              "confidence": 0.8
+            },
+            "lobe": {
+              "value": "attached",
+              "confidence": 0.9
+            },
+            "protrusion": {
+              "value": "low",
+              "confidence": 0.7
+            },
+            "piercings": {
+              "value": "single",
+              "confidence": 0.6
+            }
+          },
+          "tags": [
+            "small ears",
+            "attached lobes",
+            "low protrusion",
+            "single piercing"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "ear_17",
+            "part_num": 17,
+            "category": "ear",
+            "score": 0.06593615712718147
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "ear_17",
+        "part_num": 17,
+        "score": 0.06593615712718147
+      }
+    },
+    "outline": {
+      "extracted": {
+        "summary": "Round face with soft features",
+        "tags": [
+          "round face",
+          "soft jawline",
+          "rounded chin",
+          "asian",
+          "female",
+          "young adult"
+        ],
+        "query_phrase": "Round face with soft features, round face, soft jawline, rounded chin, asian, female, young adult",
+        "raw": {
+          "summary": "Round face with soft features",
+          "attributes": {
+            "shape": {
+              "value": "round",
+              "confidence": 0.9
+            },
+            "jawline": {
+              "value": "soft",
+              "confidence": 0.8
+            },
+            "chin": {
+              "value": "rounded",
+              "confidence": 0.9
+            }
+          },
+          "tags": [
+            "round face",
+            "soft jawline",
+            "rounded chin",
+            "Asian",
+            "female",
+            "young adult"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "outline_19",
+            "part_num": 19,
+            "category": "outline",
+            "score": 0.0837283902547068
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "outline_19",
+        "part_num": 19,
+        "score": 0.0837283902547068
+      }
+    }
+  },
+  "compact": {
+    "hair": {
+      "part_num": 188,
+      "score": 0.13441092620641576
+    },
+    "eye": {
+      "part_num": 20,
+      "score": 0.09613669145743647
+    },
+    "eyebrow": {
+      "part_num": 81,
+      "score": 0.09774932503165279
+    },
+    "nose": {
+      "part_num": 81,
+      "score": 0.13185073365060637
+    },
+    "mouth": {
+      "part_num": 80,
+      "score": 0.06997682901133043
+    },
+    "ear": {
+      "part_num": 17,
+      "score": 0.06593615712718147
+    },
+    "outline": {
+      "part_num": 19,
+      "score": 0.0837283902547068
+    }
+  }
+}

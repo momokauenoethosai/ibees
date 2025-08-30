@@ -25,11 +25,12 @@ from kawakura.main.run_all_parts import run_once
 # face_composer のモジュールをインポート
 from face_composer.face_composer import FaceComposer
 from face_composer.landmark_detector import FaceLandmarkDetector
+from face_composer.gemini_refinement import GeminiCoordinateRefiner
 from PIL import Image
 
-# Cloud Run では書き込みは /tmp のみ
-UPLOADS_DIR = Path(os.environ.get("UPLOADS_DIR", "/tmp/uploads"))
-OUTPUTS_DIR = Path(os.environ.get("OUTPUTS_DIR", "/tmp/outputs"))
+# 開発環境ではプロジェクトのoutputsフォルダを使用、Cloud Runでは /tmp を使用
+UPLOADS_DIR = Path(os.environ.get("UPLOADS_DIR", PROJECT_ROOT / "uploads"))
+OUTPUTS_DIR = Path(os.environ.get("OUTPUTS_DIR", PROJECT_ROOT / "outputs"))
 ASSETS_ROOT = PROJECT_ROOT / "kawakura" / "assets_png"  # リポジトリ同梱
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
@@ -342,6 +343,246 @@ def compose_face():
             "ok": True,
             "composed_image_url": f"/outputs/{result_filename}",
             "timestamp": ts
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify(ok=False, error=str(e)), 500
+
+@app.post("/refine")
+def refine_coordinates():
+    """
+    Gemini APIを使用して座標を修正する（outputsフォルダの既存ファイルを使用）
+    """
+    try:
+        data = request.get_json()
+        print(f"[DEBUG] Received refine request: {data}")
+        
+        if not data:
+            return jsonify(ok=False, error="JSON data is required"), 400
+        
+        # 既存のJSONファイルとPNGファイルのパスを取得
+        raw_json_url = data.get('raw_json_url')
+        composed_image_url = data.get('composed_image_url')
+        
+        print(f"[DEBUG] raw_json_url: {raw_json_url}")
+        print(f"[DEBUG] composed_image_url: {composed_image_url}")
+        
+        if not raw_json_url or not composed_image_url:
+            return jsonify(ok=False, error="raw_json_url and composed_image_url are required"), 400
+        
+        # JSONファイルパスを取得
+        if raw_json_url.startswith('/outputs/'):
+            json_filename = raw_json_url.replace('/outputs/', '')
+            json_path = OUTPUTS_DIR / json_filename
+        else:
+            return jsonify(ok=False, error="Invalid raw_json_url"), 400
+        
+        # 合成画像パスを取得
+        if composed_image_url.startswith('/outputs/'):
+            image_filename = composed_image_url.replace('/outputs/', '')
+            composed_image_path = OUTPUTS_DIR / image_filename
+        else:
+            return jsonify(ok=False, error="Invalid composed_image_url"), 400
+        
+        # ファイル存在確認
+        if not json_path.exists():
+            return jsonify(ok=False, error=f"JSON file not found: {json_path}"), 400
+        
+        if not composed_image_path.exists():
+            return jsonify(ok=False, error=f"Composed image not found: {composed_image_path}"), 400
+        
+        # JSONファイルから分析結果を読み込み
+        try:
+            analysis_result = json.loads(json_path.read_text(encoding='utf-8'))
+        except Exception as e:
+            return jsonify(ok=False, error=f"Failed to parse JSON: {e}"), 400
+        
+        # パーツ情報を抽出
+        parts = analysis_result.get('parts', {})
+        parts_dict = {}
+        
+        for category, part_info in parts.items():
+            selected = part_info.get('selected', {})
+            part_num = selected.get('part_num')
+            score = selected.get('score', 0.0)
+            
+            if part_num:
+                part_image_path = find_part_image(category, part_num)
+                if part_image_path:
+                    parts_dict[category] = {
+                        'part_id': f"{category}_{part_num:03d}",
+                        'image_path': part_image_path,
+                        'part_num': part_num,
+                        'score': score
+                    }
+        
+        if not parts_dict:
+            return jsonify(ok=False, error="No valid parts found in JSON"), 400
+        
+        print(f"[DEBUG] Found {len(parts_dict)} parts: {list(parts_dict.keys())}")
+        
+        # 現在の座標設定
+        base_positions = {
+            'hair': (200, 200, 1.0),
+            'eye': {
+                'left': (225, 215, 0.2),
+                'right': (175, 215, 0.2),
+                'single': (200, 215, 0.2)
+            },
+            'eyebrow': {
+                'left': (225, 185, 0.2),
+                'right': (175, 185, 0.2),
+                'single': (200, 185, 0.2)
+            },
+            'nose': (200, 230, 0.2),
+            'mouth': (200, 255, 0.25),
+            'ear': {
+                'left': (250, 220, 0.28),
+                'right': (150, 220, 0.28)
+            },
+            'outline': (200, 200, 1.0),
+            'acc': (200, 180, 0.3),
+            'beard': (200, 300, 0.4),
+            'glasses': (200, 215, 0.5)
+        }
+        
+        # Gemini APIで座標修正
+        print(f"[DEBUG] Calling Gemini API for coordinate refinement...")
+        refiner = GeminiCoordinateRefiner()
+        refined_positions = refiner.refine_coordinates(
+            composed_image_path=composed_image_path,
+            parts_dict=parts_dict,
+            current_positions=base_positions,
+            canvas_size=(400, 400)
+        )
+        
+        if not refined_positions:
+            return jsonify(ok=False, error="Failed to refine coordinates with Gemini"), 500
+        
+        # 修正結果をJSONとして保存
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        refined_filename = f"refined_{ts}.json"
+        refined_json_path = OUTPUTS_DIR / refined_filename
+        
+        refinement_result = {
+            "original_json_file": raw_json_url,
+            "original_composed_image": composed_image_url,
+            "refined_positions": refined_positions,
+            "parts_dict": {k: {'part_num': v['part_num'], 'score': v['score']} for k, v in parts_dict.items()},
+            "timestamp": ts
+        }
+        
+        refined_json_path.write_text(
+            json.dumps(refinement_result, ensure_ascii=False, indent=2), 
+            encoding="utf-8"
+        )
+        
+        print(f"[DEBUG] Refinement completed successfully!")
+        
+        return jsonify({
+            "ok": True,
+            "refined_positions": refined_positions,
+            "refinement_json_url": f"/outputs/{refined_filename}",
+            "message": "Coordinates refined successfully using existing output files.",
+            "timestamp": ts
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify(ok=False, error=str(e)), 500
+
+@app.post("/recompose")
+def recompose_with_refined_coordinates():
+    """
+    Geminiで修正された座標を使って再合成する
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify(ok=False, error="JSON data is required"), 400
+        
+        refinement_json_url = data.get('refinement_json_url')
+        if not refinement_json_url:
+            return jsonify(ok=False, error="refinement_json_url is required"), 400
+        
+        print(f"[DEBUG] Recomposing with refined coordinates: {refinement_json_url}")
+        
+        # refinementファイルを読み込み
+        if refinement_json_url.startswith('/outputs/'):
+            refinement_filename = refinement_json_url.replace('/outputs/', '')
+            refinement_path = OUTPUTS_DIR / refinement_filename
+        else:
+            return jsonify(ok=False, error="Invalid refinement_json_url"), 400
+        
+        if not refinement_path.exists():
+            return jsonify(ok=False, error="Refinement JSON not found"), 400
+        
+        try:
+            refinement_data = json.loads(refinement_path.read_text(encoding='utf-8'))
+        except Exception as e:
+            return jsonify(ok=False, error=f"Failed to parse refinement JSON: {e}"), 400
+        
+        # 修正された座標とパーツ情報を取得
+        refined_positions = refinement_data.get('refined_positions', {})
+        parts_dict = refinement_data.get('parts_dict', {})
+        
+        if not refined_positions or not parts_dict:
+            return jsonify(ok=False, error="Invalid refinement data"), 400
+        
+        # パーツ画像パスを解決
+        full_parts_dict = {}
+        for category, part_info in parts_dict.items():
+            part_num = part_info.get('part_num')
+            score = part_info.get('score', 0.0)
+            
+            if part_num:
+                part_image_path = find_part_image(category, part_num)
+                if part_image_path:
+                    full_parts_dict[category] = {
+                        'part_id': f"{category}_{part_num:03d}",
+                        'image_path': part_image_path,
+                        'part_num': part_num,
+                        'score': score
+                    }
+        
+        # カスタム座標で顔合成実行
+        print(f"[DEBUG] Recomposing with {len(full_parts_dict)} parts using refined coordinates")
+        
+        # FaceComposerに修正された座標を適用
+        composer = FaceComposer(canvas_size=(400, 400))
+        
+        # 座標を一時的に適用（後で詳細実装）
+        composed_image = composer.compose_face_with_custom_positions(
+            base_image_path=None,
+            parts_dict=full_parts_dict,
+            custom_positions=refined_positions
+        )
+        
+        if not composed_image:
+            return jsonify(ok=False, error="Recomposition failed"), 500
+        
+        # 結果画像を保存
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        recomposed_filename = f"recomposed_{ts}.png"
+        recomposed_path = OUTPUTS_DIR / recomposed_filename
+        
+        # RGBに変換して保存
+        if composed_image.mode == 'RGBA':
+            background = Image.new('RGB', composed_image.size, (255, 255, 255))
+            background.paste(composed_image, mask=composed_image.split()[-1])
+            composed_image = background
+        
+        composed_image.save(recomposed_path, 'PNG')
+        
+        return jsonify({
+            "ok": True,
+            "recomposed_image_url": f"/outputs/{recomposed_filename}",
+            "refined_positions": refined_positions,
+            "timestamp": ts,
+            "message": "Successfully recomposed with refined coordinates"
         })
         
     except Exception as e:

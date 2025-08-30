@@ -69,6 +69,133 @@ class FaceComposer:
         # デバッグ情報
         print(f"[DEBUG] FaceComposer初期化: キャンバス{canvas_size}, 中心{self.canvas_center}")
     
+    def compose_face_with_custom_positions(self,
+                                           base_image_path: Optional[Path],
+                                           parts_dict: Dict[str, Dict],
+                                           custom_positions: Dict[str, Any]) -> Optional[Image.Image]:
+        """
+        カスタム座標を使用した顔合成
+        
+        Args:
+            base_image_path: ベース顔画像のパス（オプション）
+            parts_dict: 選択されたパーツ情報
+            custom_positions: カスタム座標辞書（Gemini修正結果）
+            
+        Returns:
+            合成された顔画像、失敗時はNone
+        """
+        try:
+            # 1. 透明キャンバスを作成
+            canvas = Image.new('RGBA', self.canvas_size, (0, 0, 0, 0))
+            print(f"[DEBUG] カスタム座標で合成開始: {self.canvas_size}")
+            
+            # 2. カスタム座標で各パーツレイヤーを作成
+            self._create_layers_with_custom_positions(parts_dict, custom_positions)
+            
+            # 3. レイヤーを順番に合成
+            composed_image = self._compose_layers(canvas)
+            
+            # 4. 後処理
+            final_image = self._apply_post_processing(composed_image)
+            
+            return final_image
+            
+        except Exception as e:
+            print(f"[ERROR] Custom position composition failed: {e}")
+            return None
+
+    def _create_layers_with_custom_positions(self, parts_dict: Dict[str, Dict], custom_positions: Dict[str, Any]):
+        """カスタム座標でレイヤーを作成"""
+        self.layers.clear()
+        
+        for category, part_data in parts_dict.items():
+            if category not in custom_positions:
+                print(f"[WARN] No custom position for {category}, skipping")
+                continue
+                
+            part_image_path = part_data['image_path']
+            if not part_image_path.exists():
+                print(f"[WARN] Part image not found: {part_image_path}")
+                continue
+                
+            # カスタム座標を取得
+            custom_pos = custom_positions[category]
+            
+            try:
+                part_image = Image.open(part_image_path).convert('RGBA')
+                
+                if isinstance(custom_pos, dict):
+                    # 左右対称パーツの処理
+                    if 'left' in custom_pos and 'right' in custom_pos:
+                        # 左側パーツ
+                        left_pos = custom_pos['left']
+                        if len(left_pos) >= 3:
+                            x, y, scale = left_pos[0], left_pos[1], left_pos[2]
+                            scaled_image = self._scale_part_image(part_image, scale)
+                            layer = CompositionLayer(
+                                category=f"{category}_left",
+                                part_image=scaled_image,
+                                position=(x, y),
+                                scale=scale
+                            )
+                            self.layers.append(layer)
+                            print(f"[DEBUG] {category}_left: pos=({x}, {y}), scale={scale}")
+                        
+                        # 右側パーツ（左右反転）
+                        right_pos = custom_pos['right']
+                        if len(right_pos) >= 3:
+                            x, y, scale = right_pos[0], right_pos[1], right_pos[2]
+                            flipped_image = part_image.transpose(Image.FLIP_LEFT_RIGHT)
+                            scaled_image = self._scale_part_image(flipped_image, scale)
+                            layer = CompositionLayer(
+                                category=f"{category}_right",
+                                part_image=scaled_image,
+                                position=(x, y),
+                                scale=scale
+                            )
+                            self.layers.append(layer)
+                            print(f"[DEBUG] {category}_right: pos=({x}, {y}), scale={scale}")
+                    elif 'single' in custom_pos:
+                        # 単一パーツ
+                        single_pos = custom_pos['single']
+                        if len(single_pos) >= 3:
+                            x, y, scale = single_pos[0], single_pos[1], single_pos[2]
+                            scaled_image = self._scale_part_image(part_image, scale)
+                            layer = CompositionLayer(
+                                category=category,
+                                part_image=scaled_image,
+                                position=(x, y),
+                                scale=scale
+                            )
+                            self.layers.append(layer)
+                            print(f"[DEBUG] {category}_single: pos=({x}, {y}), scale={scale}")
+                else:
+                    # タプル形式の座標
+                    if len(custom_pos) >= 3:
+                        x, y, scale = custom_pos[0], custom_pos[1], custom_pos[2]
+                        scaled_image = self._scale_part_image(part_image, scale)
+                        layer = CompositionLayer(
+                            category=category,
+                            part_image=scaled_image,
+                            position=(x, y),
+                            scale=scale
+                        )
+                        self.layers.append(layer)
+                        print(f"[DEBUG] {category}: pos=({x}, {y}), scale={scale}")
+                        
+            except Exception as e:
+                print(f"[ERROR] Failed to process {category}: {e}")
+                continue
+
+    def _scale_part_image(self, image: Image.Image, scale: float) -> Image.Image:
+        """パーツ画像をスケーリング"""
+        if scale == 1.0:
+            return image
+        
+        new_width = int(image.width * scale)
+        new_height = int(image.height * scale)
+        return image.resize((new_width, new_height), Image.LANCZOS)
+
     def compose_face(self, 
                     base_image_path: Path, 
                     selected_parts: Dict[str, Dict]) -> Optional[Image.Image]:

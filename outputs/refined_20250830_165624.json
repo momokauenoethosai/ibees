@@ -1,0 +1,118 @@
+{
+  "original_json_file": "/outputs/run_20250830_165426.json",
+  "original_composed_image": "/outputs/composed_20250830_165426.png",
+  "refined_positions": {
+    "hair": [
+      200,
+      180,
+      1.2
+    ],
+    "eye": {
+      "left": [
+        225,
+        210,
+        0.25
+      ],
+      "right": [
+        175,
+        210,
+        0.25
+      ],
+      "single": [
+        0,
+        0,
+        0
+      ]
+    },
+    "eyebrow": {
+      "left": [
+        225,
+        190,
+        0.25
+      ],
+      "right": [
+        175,
+        190,
+        0.25
+      ],
+      "single": [
+        0,
+        0,
+        0
+      ]
+    },
+    "nose": [
+      200,
+      230,
+      0.3
+    ],
+    "mouth": [
+      200,
+      250,
+      0.3
+    ],
+    "ear": {
+      "left": [
+        250,
+        210,
+        0.3
+      ],
+      "right": [
+        150,
+        210,
+        0.3
+      ]
+    },
+    "outline": [
+      200,
+      200,
+      1.0
+    ],
+    "acc": [
+      0,
+      0,
+      0
+    ],
+    "beard": [
+      0,
+      0,
+      0
+    ],
+    "glasses": [
+      0,
+      0,
+      0
+    ]
+  },
+  "parts_dict": {
+    "hair": {
+      "part_num": 262,
+      "score": 0.11543342332591447
+    },
+    "eye": {
+      "part_num": 38,
+      "score": 0.09923111997526572
+    },
+    "eyebrow": {
+      "part_num": 93,
+      "score": 0.08621543954660145
+    },
+    "nose": {
+      "part_num": 48,
+      "score": 0.1293898707565032
+    },
+    "mouth": {
+      "part_num": 80,
+      "score": 0.07916257126041215
+    },
+    "ear": {
+      "part_num": 17,
+      "score": 0.0728686192029908
+    },
+    "outline": {
+      "part_num": 19,
+      "score": 0.06840372089679954
+    }
+  },
+  "timestamp": "20250830_165624"
+}

@@ -193,9 +193,16 @@
                   <div class="thumb">
                     <img src="${data.composed_image_url}" alt="composed_result" style="width: 200px; height: 200px;" />
                     <div class="muted">合成結果</div>
+                    <button id="refine-btn" style="margin-top: 8px; padding: 4px 8px; font-size: 12px;">Gemini修正</button>
                   </div>
                 `;
                 result.appendChild(composedRow);
+                
+                // Gemini修正ボタンのイベントリスナーを追加
+                const refineBtn = document.getElementById('refine-btn');
+                refineBtn.addEventListener('click', async () => {
+                  await refineWithGemini(data);
+                });
               }
 
               if (data.raw_json_url) {
@@ -236,6 +243,152 @@
         btn.disabled = false;
       }
     });
+
+    // Gemini座標修正関数
+    async function refineWithGemini(analysisResult) {
+      if (!analysisResult || !analysisResult.composed_image_url) {
+        alert('合成画像がありません');
+        return;
+      }
+
+      const refineBtn = document.getElementById('refine-btn');
+      if (refineBtn) {
+        refineBtn.disabled = true;
+        refineBtn.textContent = '修正中...';
+      }
+
+      try {
+        const refineData = {
+          composed_image_url: analysisResult.composed_image_url,
+          raw_json_url: analysisResult.raw_json_url
+        };
+        
+        console.log('[DEBUG] Sending refine data:', refineData);
+
+        const response = await fetch('/refine', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(refineData)
+        });
+
+        const result = await response.json();
+
+        if (result.ok) {
+          // 修正結果を表示
+          const refinedRow = document.createElement('div');
+          refinedRow.className = 'row';
+          refinedRow.style.marginTop = '16px';
+          refinedRow.innerHTML = `
+            <div class="thumb" style="width: 300px;">
+              <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; text-align: left; font-size: 12px; font-family: monospace;">
+                <strong>Gemini修正結果:</strong><br/>
+                <pre>${JSON.stringify(result.refined_positions, null, 2)}</pre>
+              </div>
+              <div class="muted" style="margin-top: 8px;">
+                <a href="${result.refinement_json_url}" target="_blank">修正JSONを見る</a><br/>
+                <button id="recompose-btn" style="margin-top: 8px; padding: 4px 8px; font-size: 12px;">修正座標で再合成</button>
+              </div>
+            </div>
+          `;
+          
+          // 再合成ボタンのイベントリスナーを追加
+          setTimeout(() => {
+            const recomposeBtn = document.getElementById('recompose-btn');
+            if (recomposeBtn) {
+              recomposeBtn.addEventListener('click', async () => {
+                await recomposeWithRefinedCoordinates(result.refinement_json_url);
+              });
+            }
+          }, 100);
+          
+          // 合成結果の後に追加
+          const composedRow = document.querySelector('.row:has(#refine-btn)');
+          if (composedRow && composedRow.parentNode) {
+            composedRow.parentNode.insertBefore(refinedRow, composedRow.nextSibling);
+          } else {
+            result.appendChild(refinedRow);
+          }
+
+          // 成功メッセージ
+          alert('Gemini修正完了！修正された座標情報が表示されました。');
+        } else {
+          throw new Error(result.error || '修正に失敗しました');
+        }
+
+      } catch (err) {
+        console.error('Gemini修正エラー:', err);
+        alert(`修正エラー: ${err.message}`);
+      } finally {
+        if (refineBtn) {
+          refineBtn.disabled = false;
+          refineBtn.textContent = 'Gemini修正';
+        }
+      }
+    }
+
+    // Gemini修正座標での再合成関数
+    async function recomposeWithRefinedCoordinates(refinementJsonUrl) {
+      const recomposeBtn = document.getElementById('recompose-btn');
+      if (recomposeBtn) {
+        recomposeBtn.disabled = true;
+        recomposeBtn.textContent = '再合成中...';
+      }
+
+      try {
+        const recomposeData = {
+          refinement_json_url: refinementJsonUrl
+        };
+
+        console.log('[DEBUG] Recomposing with refined coordinates:', recomposeData);
+
+        const response = await fetch('/recompose', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(recomposeData)
+        });
+
+        const result = await response.json();
+
+        if (result.ok) {
+          // 再合成結果を表示
+          const recomposedRow = document.createElement('div');
+          recomposedRow.className = 'row';
+          recomposedRow.style.marginTop = '16px';
+          recomposedRow.innerHTML = `
+            <div class="thumb">
+              <img src="${result.recomposed_image_url}" alt="recomposed_result" style="width: 200px; height: 200px;" />
+              <div class="muted">Gemini修正後の再合成結果</div>
+            </div>
+          `;
+
+          // 修正結果の後に追加
+          const refinedRow = recomposeBtn.closest('.row');
+          if (refinedRow && refinedRow.parentNode) {
+            refinedRow.parentNode.insertBefore(recomposedRow, refinedRow.nextSibling);
+          } else {
+            result.appendChild(recomposedRow);
+          }
+
+          // 成功メッセージ
+          alert('修正された座標での再合成が完了しました！');
+        } else {
+          throw new Error(result.error || '再合成に失敗しました');
+        }
+
+      } catch (err) {
+        console.error('再合成エラー:', err);
+        alert(`再合成エラー: ${err.message}`);
+      } finally {
+        if (recomposeBtn) {
+          recomposeBtn.disabled = false;
+          recomposeBtn.textContent = '修正座標で再合成';
+        }
+      }
+    }
 
     // 合成ボタンのクリックイベント
     composeBtn.addEventListener('click', async () => {

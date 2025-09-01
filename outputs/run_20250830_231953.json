@@ -1,0 +1,509 @@
+{
+  "input_image": "/Users/uenomomoka/Desktop/Projects/vision_rag/uploads/upload_20250830_231953.png",
+  "meta": {
+    "top_k": 1,
+    "min_score": 0.0
+  },
+  "parts": {
+    "hair": {
+      "extracted": {
+        "summary": "Blunt bob with bangs",
+        "tags": [
+          "blunt-bob",
+          "straight-hair",
+          "front-bangs",
+          "short-hair",
+          "black-hair"
+        ],
+        "query_phrase": "Blunt bob with bangs, blunt-bob, straight-hair, front-bangs, short-hair, black-hair",
+        "raw": {
+          "summary": "Blunt bob with bangs",
+          "attributes": {
+            "length": {
+              "value": "short",
+              "confidence": 0.95
+            },
+            "parting": {
+              "value": "no-part",
+              "confidence": 0.9
+            },
+            "bangs": {
+              "value": "bangs-front",
+              "confidence": 0.95
+            },
+            "curl_pattern": {
+              "value": "straight",
+              "confidence": 0.95
+            },
+            "volume": {
+              "value": "medium-volume",
+              "confidence": 0.8
+            },
+            "layering": {
+              "value": "one-length",
+              "confidence": 0.85
+            },
+            "ends": {
+              "value": "blunt",
+              "confidence": 0.9
+            },
+            "color_primary": {
+              "value": "black",
+              "confidence": 0.9
+            }
+          },
+          "tags": [
+            "blunt-bob",
+            "straight-hair",
+            "front-bangs",
+            "short-hair",
+            "black-hair"
+          ],
+          "notes": "A short, blunt bob with straight bangs. The hair appears to be one length with a medium volume.",
+          "confidence_overall": 0.9
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "hair_153",
+            "part_num": 153,
+            "category": "hair",
+            "score": 0.1318717709197334
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "hair_153",
+        "part_num": 153,
+        "score": 0.1318717709197334
+      }
+    },
+    "eye": {
+      "extracted": {
+        "summary": "Smiling eyes with medium openness",
+        "tags": [
+          "round",
+          "medium",
+          "neutral",
+          "medium openness",
+          "medium lash",
+          "medium brow gap",
+          "medium iris visible"
+        ],
+        "query_phrase": "Smiling eyes with medium openness, round, medium, neutral, medium openness, medium lash, medium brow gap, medium iris visible",
+        "raw": {
+          "summary": "Smiling eyes with medium openness",
+          "attributes": {
+            "shape": {
+              "value": "round",
+              "confidence": 0.8
+            },
+            "size": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "tilt": {
+              "value": "neutral",
+              "confidence": 0.7
+            },
+            "openness": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "lash": {
+              "value": "medium",
+              "confidence": 0.6
+            },
+            "brow_gap": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "iris_visible": {
+              "value": "medium",
+              "confidence": 0.7
+            }
+          },
+          "tags": [
+            "round",
+            "medium",
+            "neutral",
+            "medium openness",
+            "medium lash",
+            "medium brow gap",
+            "medium iris visible"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "eye_87",
+            "part_num": 87,
+            "category": "eye",
+            "score": 0.10815811477118491
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "eye_87",
+        "part_num": 87,
+        "score": 0.10815811477118491
+      }
+    },
+    "eyebrow": {
+      "extracted": {
+        "summary": "Thin, straight eyebrows",
+        "tags": [
+          "thin",
+          "straight",
+          "medium length",
+          "natural"
+        ],
+        "query_phrase": "Thin, straight eyebrows, thin, straight, medium length, natural",
+        "raw": {
+          "summary": "Thin, straight eyebrows",
+          "attributes": {
+            "thickness": {
+              "value": "thin",
+              "confidence": 0.9
+            },
+            "shape": {
+              "value": "straight",
+              "confidence": 0.8
+            },
+            "length": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "density": {
+              "value": "medium",
+              "confidence": 0.6
+            },
+            "tail": {
+              "value": "medium",
+              "confidence": 0.7
+            }
+          },
+          "tags": [
+            "thin",
+            "straight",
+            "medium length",
+            "natural"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "eyebrow_89",
+            "part_num": 89,
+            "category": "eyebrow",
+            "score": 0.09946616695800303
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "eyebrow_89",
+        "part_num": 89,
+        "score": 0.09946616695800303
+      }
+    },
+    "nose": {
+      "extracted": {
+        "summary": "Asian woman's nose",
+        "tags": [
+          "asian",
+          "female",
+          "smiling",
+          "short hair"
+        ],
+        "query_phrase": "Asian woman's nose, asian, female, smiling, short hair",
+        "raw": {
+          "summary": "Asian woman's nose",
+          "attributes": {
+            "bridge": {
+              "value": "low",
+              "confidence": 0.8
+            },
+            "width": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "tip": {
+              "value": "rounded",
+              "confidence": 0.7
+            },
+            "nostrils": {
+              "value": "medium",
+              "confidence": 0.6
+            },
+            "length": {
+              "value": "short",
+              "confidence": 0.7
+            }
+          },
+          "tags": [
+            "Asian",
+            "female",
+            "smiling",
+            "short hair"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "nose_52",
+            "part_num": 52,
+            "category": "nose",
+            "score": 0.11169034550764285
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "nose_52",
+        "part_num": 52,
+        "score": 0.11169034550764285
+      }
+    },
+    "mouth": {
+      "extracted": {
+        "summary": "Smiling lips",
+        "tags": [
+          "smiling",
+          "happy",
+          "youthful"
+        ],
+        "query_phrase": "Smiling lips, smiling, happy, youthful",
+        "raw": {
+          "summary": "Smiling lips",
+          "attributes": {
+            "fullness": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "shape": {
+              "value": "straight",
+              "confidence": 0.7
+            },
+            "width": {
+              "value": "medium",
+              "confidence": 0.7
+            },
+            "corners": {
+              "value": "up",
+              "confidence": 0.9
+            }
+          },
+          "tags": [
+            "smiling",
+            "happy",
+            "youthful"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "mouse_78",
+            "part_num": 78,
+            "category": "mouse",
+            "score": 0.1517298360366924
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "mouse_78",
+        "part_num": 78,
+        "score": 0.1517298360366924
+      }
+    },
+    "ear": {
+      "extracted": {
+        "summary": "ears with attached lobes and no piercings",
+        "tags": [
+          "ear",
+          "attached lobes",
+          "no piercings",
+          "medium size",
+          "low protrusion"
+        ],
+        "query_phrase": "ears with attached lobes and no piercings, ear, attached lobes, no piercings, medium size, low protrusion",
+        "raw": {
+          "summary": "ears with attached lobes and no piercings",
+          "attributes": {
+            "size": {
+              "value": "medium",
+              "confidence": 0.8
+            },
+            "lobe": {
+              "value": "attached",
+              "confidence": 0.9
+            },
+            "protrusion": {
+              "value": "low",
+              "confidence": 0.7
+            },
+            "piercings": {
+              "value": "none",
+              "confidence": 1.0
+            }
+          },
+          "tags": [
+            "ear",
+            "attached lobes",
+            "no piercings",
+            "medium size",
+            "low protrusion"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "ear_17",
+            "part_num": 17,
+            "category": "ear",
+            "score": 0.08695173507843958
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "ear_17",
+        "part_num": 17,
+        "score": 0.08695173507843958
+      }
+    },
+    "outline": {
+      "extracted": {
+        "summary": "Round face with soft features",
+        "tags": [
+          "youthful",
+          "smiling",
+          "friendly",
+          "asian",
+          "short hair"
+        ],
+        "query_phrase": "Round face with soft features, youthful, smiling, friendly, asian, short hair",
+        "raw": {
+          "summary": "Round face with soft features",
+          "attributes": {
+            "shape": {
+              "value": "round",
+              "confidence": 0.9
+            },
+            "jawline": {
+              "value": "soft",
+              "confidence": 0.8
+            },
+            "chin": {
+              "value": "rounded",
+              "confidence": 0.9
+            }
+          },
+          "tags": [
+            "youthful",
+            "smiling",
+            "friendly",
+            "Asian",
+            "short hair"
+          ]
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "outline_21",
+            "part_num": 21,
+            "category": "outline",
+            "score": 0.05198052533186014
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "outline_21",
+        "part_num": 21,
+        "score": 0.05198052533186014
+      }
+    },
+    "acc": {
+      "extracted": {
+        "summary": "no visible accessories",
+        "tags": [],
+        "query_phrase": "no visible accessories",
+        "raw": {
+          "summary": "no visible accessories",
+          "attributes": {
+            "type": {
+              "value": "none",
+              "confidence": 1.0
+            },
+            "material": {
+              "value": "unclear",
+              "confidence": 0.3
+            },
+            "shape": {
+              "value": "unclear",
+              "confidence": 0.3
+            },
+            "color": {
+              "value": "unclear",
+              "confidence": 0.3
+            }
+          },
+          "tags": []
+        }
+      },
+      "search": {
+        "top_hits": [
+          {
+            "part_id": "acc_16",
+            "part_num": 16,
+            "category": "acc",
+            "score": 0.09783921917142231
+          }
+        ]
+      },
+      "selected": {
+        "part_id_full": "acc_16",
+        "part_num": 16,
+        "score": 0.09783921917142231
+      }
+    }
+  },
+  "compact": {
+    "hair": {
+      "part_num": 153,
+      "score": 0.1318717709197334
+    },
+    "eye": {
+      "part_num": 87,
+      "score": 0.10815811477118491
+    },
+    "eyebrow": {
+      "part_num": 89,
+      "score": 0.09946616695800303
+    },
+    "nose": {
+      "part_num": 52,
+      "score": 0.11169034550764285
+    },
+    "mouth": {
+      "part_num": 78,
+      "score": 0.1517298360366924
+    },
+    "ear": {
+      "part_num": 17,
+      "score": 0.08695173507843958
+    },
+    "outline": {
+      "part_num": 21,
+      "score": 0.05198052533186014
+    },
+    "acc": {
+      "part_num": 16,
+      "score": 0.09783921917142231
+    }
+  }
+}

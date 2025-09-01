@@ -1,0 +1,39 @@
+{
+  "progression_analysis": {
+    "improvement_trend": "declining",
+    "successful_adjustments": [],
+    "failed_adjustments": [],
+    "next_strategy": "force_correction"
+  },
+  "debug_analysis": {
+    "human_perception_score": 0.2,
+    "anomalies_detected": [
+      "目の間隔が異常に広い（約80px）",
+      "口が顔全体に対して不釣り合いに大きい",
+      "全体バランス崩壊"
+    ]
+  },
+  "comparison_analysis": {
+    "similarity_score": 0.1,
+    "relationship_differences": [
+      "画像1と比較して全体的なパーツバランスが極めて不自然",
+      "顔の輪郭が全く似ていない"
+    ]
+  },
+  "adjustments": {
+    "eye": {
+      "position": "left",
+      "reason": "異常に離れた目を自然な間隔に強制修正（右目も同様に調整が必要）"
+    },
+    "mouth": {
+      "scale": "smaller",
+      "reason": "異常に大きい口を人間の感覚に合わせて修正"
+    },
+    "outline": {
+      "shape": "wider",
+      "reason": "顔の輪郭を元画像に合わせて修正"
+    }
+  },
+  "satisfied": false,
+  "notes": "人間の感覚で不自然な部分を解剖学的基準で強制修正。輪郭も大きく異なるため修正。"
+}

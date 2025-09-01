@@ -208,8 +208,17 @@
               if (data.raw_json_url) {
                 const raw = document.createElement('div');
                 raw.style.marginTop = '8px';
-                raw.innerHTML = `<a href="${data.raw_json_url}" target="_blank">JSONを見る</a>`;
+                raw.innerHTML = `
+                  <a href="${data.raw_json_url}" target="_blank">JSONを見る</a>
+                  <button id="iterative-btn" style="margin-left: 12px; padding: 6px 12px; background: #ff6b35; color: white;">🔄 反復調整</button>
+                `;
                 result.appendChild(raw);
+                
+                // 反復調整ボタンのイベントリスナー
+                const iterativeBtn = document.getElementById('iterative-btn');
+                iterativeBtn.addEventListener('click', async () => {
+                  await startIterativeRefinement(data.raw_json_url);
+                });
               }
 
               // 合成ボタンを表示・有効化（ただし自動合成された場合は不要）
@@ -386,6 +395,136 @@
         if (recomposeBtn) {
           recomposeBtn.disabled = false;
           recomposeBtn.textContent = '修正座標で再合成';
+        }
+      }
+    }
+
+    // 反復調整機能
+    async function startIterativeRefinement(rawJsonUrl) {
+      const iterativeBtn = document.getElementById('iterative-btn');
+      if (iterativeBtn) {
+        iterativeBtn.disabled = true;
+        iterativeBtn.textContent = '🔄 調整中...';
+      }
+
+      // 反復調整専用のステータス表示エリアを作成
+      const iterativeContainer = document.createElement('div');
+      iterativeContainer.className = 'card';
+      iterativeContainer.style.marginTop = '24px';
+      iterativeContainer.innerHTML = `
+        <h3>🔄 反復的パーツ調整</h3>
+        <div class="status processing" id="iterative-status">
+          <div id="iterative-current">調整を開始しています...</div>
+          <div class="bar"><div id="iterative-prog"></div></div>
+        </div>
+        <div id="iteration-gallery" class="row" style="margin-top: 16px;"></div>
+      `;
+      
+      document.body.appendChild(iterativeContainer);
+
+      try {
+        // 反復調整開始
+        const response = await fetch('/iterative_refine', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ raw_json_url: rawJsonUrl })
+        });
+
+        const result = await response.json();
+        if (!result.ok) throw new Error(result.error);
+
+        // SSEで進捗監視
+        const eventSource = new EventSource(`/stream/${result.stream_id}`);
+        
+        eventSource.onmessage = function(event) {
+          const data = JSON.parse(event.data);
+          console.log('反復SSE:', data);
+
+          const iterativeStatus = document.getElementById('iterative-status');
+          const iterativeCurrent = document.getElementById('iterative-current');
+          const iterativeProg = document.getElementById('iterative-prog');
+          const iterationGallery = document.getElementById('iteration-gallery');
+
+          if (data.status === 'started') {
+            iterativeCurrent.textContent = `反復調整開始（${data.parts.join(', ')}）`;
+            iterativeProg.style.width = '10%';
+          } 
+          
+          else if (data.status === 'composing') {
+            iterativeCurrent.textContent = data.message;
+            iterativeProg.style.width = `${10 + (data.iteration * 15)}%`;
+          } 
+          
+          else if (data.status === 'iteration_image') {
+            // 反復画像を表示
+            const iterationThumb = document.createElement('div');
+            iterationThumb.className = 'thumb';
+            iterationThumb.innerHTML = `
+              <img src="${data.image_url}" alt="iteration_${data.iteration}" style="width: 120px; height: 120px;" />
+              <div class="muted">反復 ${data.iteration}</div>
+            `;
+            iterationGallery.appendChild(iterationThumb);
+            
+            iterativeCurrent.textContent = `反復 ${data.iteration}: 画像生成完了`;
+          } 
+          
+          else if (data.status === 'analyzing') {
+            iterativeCurrent.textContent = data.message;
+            iterativeProg.style.width = `${15 + (data.iteration * 15)}%`;
+          } 
+          
+          else if (data.status === 'adjustment_result') {
+            if (data.satisfied) {
+              iterativeCurrent.textContent = `反復 ${data.iteration}: 満足！ - ${data.notes}`;
+            } else {
+              const adjText = Object.entries(data.adjustments).map(([part, adj]) => 
+                `${part}(${adj.position || ''}${adj.scale ? '/' + adj.scale : ''})`
+              ).join(', ');
+              iterativeCurrent.textContent = `反復 ${data.iteration}: ${adjText} - ${data.notes}`;
+            }
+          } 
+          
+          else if (data.status === 'finished') {
+            eventSource.close();
+            iterativeStatus.className = 'status completed';
+            iterativeCurrent.textContent = data.message;
+            iterativeProg.style.width = '100%';
+            
+            // 最終結果を表示
+            if (data.final_image_url) {
+              const finalThumb = document.createElement('div');
+              finalThumb.className = 'thumb';
+              finalThumb.style.border = '3px solid #4caf50';
+              finalThumb.innerHTML = `
+                <img src="${data.final_image_url}" alt="final_result" style="width: 160px; height: 160px;" />
+                <div class="muted"><strong>最終結果</strong></div>
+              `;
+              iterationGallery.appendChild(finalThumb);
+            }
+            
+            alert(`反復調整完了！${data.iteration}回の調整で最適化されました。`);
+          } 
+          
+          else if (data.status === 'error') {
+            eventSource.close();
+            iterativeStatus.className = 'status error';
+            iterativeCurrent.textContent = `エラー: ${data.error}`;
+            throw new Error(data.error);
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          throw new Error('ストリーム接続エラー');
+        };
+
+      } catch (err) {
+        console.error('反復調整エラー:', err);
+        alert(`反復調整エラー: ${err.message}`);
+      } finally {
+        if (iterativeBtn) {
+          iterativeBtn.disabled = false;
+          iterativeBtn.textContent = '🔄 反復調整';
         }
       }
     }

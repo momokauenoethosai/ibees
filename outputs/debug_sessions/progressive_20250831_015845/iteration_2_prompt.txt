@@ -1,0 +1,86 @@
+
+🎯 全履歴進化分析 - 反復2回目
+
+
+## 📷 画像の順序（計3枚）
+**画像1**: 元の実際の顔写真（最終目標）
+**画像2**: 反復1の似顔絵（変化過程）
+**画像3**: 最新の似顔絵（調整対象）
+
+## 🔍 分析目標
+**進化の流れを把握し、画像3（最新）を画像1（元写真）により近づける**
+
+全ての画像を見ることで：
+1. **変化の方向性**: どの調整が改善/悪化をもたらしたか
+2. **収束パターン**: 目標に近づいているか、迷走しているか  
+3. **次の最適手**: 過去の成功/失敗を踏まえた最良の次手
+
+
+## 📈 変化履歴（1回の調整）
+**反復1**: eye(right), mouth(smaller), outline(bigger)
+  → 類似度: 0.00 → 0.30 (変化+0.30)
+
+
+
+## 🚨 重要：人間の感覚による厳格評価
+
+### 解剖学的異常の強制検出
+画像3で以下が確認されたら **最優先修正**:
+1. **目の間隔異常**: 40px未満（狭すぎ）または 70px超（離れすぎ）
+2. **口サイズ異常**: 顔幅の15%未満（小さすぎ）または 40%超（大きすぎ）  
+3. **眉-目距離異常**: 10px未満（近すぎ）または 40px超（離れすぎ）
+4. **全体バランス崩壊**: 人間が見て明らかに不自然
+
+### 📊 評価基準
+- **human_perception_score**: 人間が見た自然さ（0.0-1.0）
+- **similarity_score**: 元画像との類似度（0.0-1.0）
+- **progression_score**: 過去からの改善度（-1.0 to +1.0）
+
+## 📋 対象パーツ: hair, eye, eyebrow, nose, mouth, ear, outline
+
+## ⚙️ 調整戦略
+
+### 🎯 履歴活用による判断
+- **成功パターン継続**: 類似度が向上した調整は同方向で継続
+- **失敗パターン回避**: 類似度が悪化した調整は逆方向に修正
+- **迷走パターン脱出**: 振動している場合は別のパーツに注目
+
+### 🚨 強制修正モード
+人間感覚スコア < 0.4 の場合：
+- 解剖学的異常を最優先修正
+- 類似度より自然さを重視
+- より大きな調整（up/down/bigger/smaller）を採用
+
+## 出力形式
+```json
+{
+  "progression_analysis": {
+    "improvement_trend": "improving|stagnating|declining",
+    "successful_adjustments": ["outline scale bigger", "mouth position up"],
+    "failed_adjustments": ["eye position left"],
+    "next_strategy": "continue_successful|try_different|force_correction"
+  },
+  "debug_analysis": {
+    "human_perception_score": 0.3,
+    "anomalies_detected": [
+      "目の間隔が異常に広い（約75px）",
+      "口が顔全体に対して不釣り合いに大きい"
+    ]
+  },
+  "comparison_analysis": {
+    "similarity_score": 0.4,
+    "relationship_differences": [
+      "画像1と比較して全体的なパーツバランスが不自然"
+    ]
+  },
+  "adjustments": {
+    "eye": {"position": "right", "reason": "異常に離れた目を自然な間隔に強制修正"},
+    "mouth": {"scale": "smaller", "reason": "異常に大きい口を人間の感覚に合わせて修正"}
+  },
+  "satisfied": false,
+  "notes": "人間の感覚で不自然な部分を解剖学的基準で強制修正"
+}
+```
+
+**最重要**: 全ての履歴画像の変化を見て、人間が自然と感じる方向に導いてください。
+    

@@ -27,6 +27,7 @@ from face_composer.face_composer import FaceComposer
 from face_composer.landmark_detector import FaceLandmarkDetector
 from face_composer.gemini_refinement import GeminiCoordinateRefiner
 from PIL import Image
+import google.generativeai as genai
 
 # 開発環境ではプロジェクトのoutputsフォルダを使用、Cloud Runでは /tmp を使用
 UPLOADS_DIR = Path(os.environ.get("UPLOADS_DIR", PROJECT_ROOT / "uploads"))
@@ -584,6 +585,294 @@ def recompose_with_refined_coordinates():
             "timestamp": ts,
             "message": "Successfully recomposed with refined coordinates"
         })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify(ok=False, error=str(e)), 500
+
+@app.post("/iterative_refine")
+def iterative_refine():
+    """
+    反復的相対調整をSSEで実行
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify(ok=False, error="JSON data is required"), 400
+        
+        raw_json_url = data.get('raw_json_url')
+        if not raw_json_url:
+            return jsonify(ok=False, error="raw_json_url is required"), 400
+        
+        # SSEストリーム用のIDを生成
+        stream_id = str(uuid.uuid4())
+        
+        def progress_callback(data):
+            if stream_id in active_streams:
+                try:
+                    active_streams[stream_id].put_nowait(data)
+                except queue.Full:
+                    pass
+        
+        def run_iterative_refinement():
+            try:
+                # JSONファイル読み込み
+                if raw_json_url.startswith('/outputs/'):
+                    json_filename = raw_json_url.replace('/outputs/', '')
+                    json_path = OUTPUTS_DIR / json_filename
+                else:
+                    raise ValueError("Invalid raw_json_url")
+                
+                if not json_path.exists():
+                    raise FileNotFoundError(f"JSON file not found: {json_path}")
+                
+                analysis_result = json.loads(json_path.read_text(encoding='utf-8'))
+                
+                # パーツ情報を抽出
+                parts = analysis_result.get('parts', {})
+                parts_dict = {}
+                
+                for category, part_info in parts.items():
+                    selected = part_info.get('selected', {})
+                    part_num = selected.get('part_num')
+                    score = selected.get('score', 0.0)
+                    
+                    if part_num:
+                        part_image_path = find_part_image(category, part_num)
+                        if part_image_path:
+                            parts_dict[category] = {
+                                'part_id': f"{category}_{part_num:03d}",
+                                'image_path': part_image_path,
+                                'part_num': part_num,
+                                'score': score
+                            }
+                
+                if not parts_dict:
+                    raise ValueError("No valid parts found")
+                
+                progress_callback({
+                    "status": "started",
+                    "message": f"反復調整を開始（{len(parts_dict)}個のパーツ）",
+                    "parts": list(parts_dict.keys())
+                })
+                
+                # 初期座標
+                current_positions = {
+                    'hair': (200, 200, 1.0),
+                    'eye': {'left': (225, 215, 0.2), 'right': (175, 215, 0.2)},
+                    'eyebrow': {'left': (225, 185, 0.2), 'right': (175, 185, 0.2)},
+                    'nose': (200, 230, 0.2),
+                    'mouth': (200, 255, 0.25),
+                    'ear': {'left': (250, 220, 0.28), 'right': (150, 220, 0.28)},
+                    'outline': (200, 200, 1.0),
+                    'acc': (200, 180, 0.3),
+                    'beard': (200, 300, 0.4),
+                    'glasses': (200, 215, 0.5)
+                }
+                
+                # Gemini設定
+                genai.configure(api_key="AIzaSyAt-wzZ3WLU1fc6fnzHvDhPsTZJNKnHszU")
+                gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                # 相対調整ステップ定義
+                ADJUSTMENT_STEPS = {
+                    'position': {
+                        'up': (0, -5), 'down': (0, 5), 'left': (-5, 0), 'right': (5, 0),
+                        'up_slight': (0, -3), 'down_slight': (0, 3), 'left_slight': (-3, 0), 'right_slight': (3, 0)
+                    },
+                    'scale': {
+                        'bigger': 0.05, 'smaller': -0.05, 'bigger_slight': 0.03, 'smaller_slight': -0.03
+                    }
+                }
+                
+                def apply_relative_adjustments(positions, adjustments):
+                    new_positions = json.loads(json.dumps(positions))
+                    
+                    for category, adj_info in adjustments.items():
+                        if category not in new_positions:
+                            continue
+                            
+                        pos_adj = adj_info.get('position')
+                        scale_adj = adj_info.get('scale')
+                        current_pos = new_positions[category]
+                        
+                        if isinstance(current_pos, dict):
+                            for side in ['left', 'right']:
+                                if side in current_pos:
+                                    x, y, scale = current_pos[side]
+                                    
+                                    if pos_adj and pos_adj in ADJUSTMENT_STEPS['position']:
+                                        dx, dy = ADJUSTMENT_STEPS['position'][pos_adj]
+                                        x, y = x + dx, y + dy
+                                    
+                                    if scale_adj and scale_adj in ADJUSTMENT_STEPS['scale']:
+                                        scale_delta = ADJUSTMENT_STEPS['scale'][scale_adj]
+                                        scale = max(0.1, min(1.0, scale + scale_delta))
+                                    
+                                    new_positions[category][side] = (x, y, scale)
+                        else:
+                            x, y, scale = current_pos
+                            
+                            if pos_adj and pos_adj in ADJUSTMENT_STEPS['position']:
+                                dx, dy = ADJUSTMENT_STEPS['position'][pos_adj]
+                                x, y = x + dx, y + dy
+                            
+                            if scale_adj and scale_adj in ADJUSTMENT_STEPS['scale']:
+                                scale_delta = ADJUSTMENT_STEPS['scale'][scale_adj]
+                                scale = max(0.1, min(1.0, scale + scale_delta))
+                            
+                            new_positions[category] = (x, y, scale)
+                    
+                    return new_positions
+                
+                # 反復調整ループ
+                iteration_images = []
+                max_iterations = 5
+                
+                for iteration in range(max_iterations):
+                    ts = time.strftime("%Y%m%d_%H%M%S")
+                    
+                    progress_callback({
+                        "status": "composing",
+                        "iteration": iteration + 1,
+                        "max_iterations": max_iterations,
+                        "message": f"反復 {iteration + 1}/{max_iterations}: 合成中..."
+                    })
+                    
+                    # 1. 現在の座標で合成
+                    composer = FaceComposer(canvas_size=(400, 400))
+                    composed_image = composer.compose_face_with_custom_positions(
+                        base_image_path=None,
+                        parts_dict=parts_dict,
+                        custom_positions=current_positions
+                    )
+                    
+                    if not composed_image:
+                        raise Exception(f"反復{iteration + 1}: 合成失敗")
+                    
+                    # 画像保存
+                    iteration_filename = f"iteration_{iteration + 1}_{ts}.png"
+                    iteration_path = OUTPUTS_DIR / iteration_filename
+                    
+                    if composed_image.mode == 'RGBA':
+                        background = Image.new('RGB', composed_image.size, (255, 255, 255))
+                        background.paste(composed_image, mask=composed_image.split()[-1])
+                        composed_image = background
+                    
+                    composed_image.save(iteration_path)
+                    iteration_url = f"/outputs/{iteration_filename}"
+                    iteration_images.append(iteration_url)
+                    
+                    progress_callback({
+                        "status": "iteration_image",
+                        "iteration": iteration + 1,
+                        "image_url": iteration_url,
+                        "message": f"反復 {iteration + 1}: 画像生成完了"
+                    })
+                    
+                    # 2. Gemini分析
+                    progress_callback({
+                        "status": "analyzing",
+                        "iteration": iteration + 1,
+                        "message": f"反復 {iteration + 1}: Gemini分析中..."
+                    })
+                    
+                    parts_list = ", ".join(list(parts_dict.keys()))
+                    prompt = f"""
+この顔合成画像を分析し、不自然な配置があれば以下のパーツの相対的調整指示を出してください。
+
+## 対象パーツ（これらの名前のみ使用）
+{parts_list}
+
+## 調整指示オプション
+**位置**: up, down, left, right (5px) / up_slight, down_slight, left_slight, right_slight (3px)
+**サイズ**: bigger, smaller (0.05倍) / bigger_slight, smaller_slight (0.03倍)
+
+## 出力形式（JSON のみ）
+```json
+{{
+  "adjustments": {{
+    "hair": {{"position": "up_slight", "scale": "smaller"}},
+    "eye": {{"position": "down"}}
+  }},
+  "satisfied": false,
+  "notes": "調整理由"
+}}
+```
+
+**重要**: パーツ名は [{parts_list}] から正確に選択。満足なら satisfied: true。
+                    """
+                    
+                    response = gemini_model.generate_content([prompt, composed_image])
+                    
+                    if not response.text:
+                        raise Exception(f"反復{iteration + 1}: Gemini応答なし")
+                    
+                    # JSON解析
+                    response_text = response.text.strip()
+                    if '```json' in response_text:
+                        start_idx = response_text.find('```json') + 7
+                        end_idx = response_text.find('```', start_idx)
+                        code_block = response_text[start_idx:end_idx].strip()
+                    else:
+                        code_block = response_text
+                    
+                    try:
+                        adjustment_result = json.loads(code_block)
+                    except json.JSONDecodeError:
+                        raise Exception(f"反復{iteration + 1}: JSON解析失敗")
+                    
+                    satisfied = adjustment_result.get('satisfied', False)
+                    adjustments = adjustment_result.get('adjustments', {})
+                    notes = adjustment_result.get('notes', '')
+                    
+                    progress_callback({
+                        "status": "adjustment_result",
+                        "iteration": iteration + 1,
+                        "satisfied": satisfied,
+                        "adjustments": adjustments,
+                        "notes": notes,
+                        "message": f"反復 {iteration + 1}: {notes}"
+                    })
+                    
+                    # 満足なら終了
+                    if satisfied or not adjustments:
+                        progress_callback({
+                            "status": "finished",
+                            "iteration": iteration + 1,
+                            "final_image_url": iteration_url,
+                            "final_positions": current_positions,
+                            "iteration_images": iteration_images,
+                            "message": "反復調整完了！" + (f" ({notes})" if notes else "")
+                        })
+                        return
+                    
+                    # 相対調整を適用
+                    current_positions = apply_relative_adjustments(current_positions, adjustments)
+                
+                # 最大回数に達した場合
+                progress_callback({
+                    "status": "finished",
+                    "iteration": max_iterations,
+                    "final_image_url": iteration_images[-1] if iteration_images else None,
+                    "final_positions": current_positions,
+                    "iteration_images": iteration_images,
+                    "message": f"最大反復回数（{max_iterations}回）に達しました"
+                })
+                
+            except Exception as e:
+                progress_callback({
+                    "status": "error",
+                    "error": str(e)
+                })
+        
+        # バックグラウンドで実行
+        thread = threading.Thread(target=run_iterative_refinement)
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify(ok=True, stream_id=stream_id)
         
     except Exception as e:
         import traceback

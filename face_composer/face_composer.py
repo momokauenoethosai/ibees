@@ -340,7 +340,9 @@ class FaceComposer:
         
         # レイヤー順序に従って合成
         for category in self.LAYER_ORDER:
-            layers = [layer for layer in self.layers if layer.category == category]
+            # 対称パーツ（eye_left, eye_right等）も含めて検索
+            layers = [layer for layer in self.layers 
+                     if layer.category == category or layer.category.startswith(f"{category}_")]
             for layer in layers:
                 result = self._blend_layer(result, layer)
         
@@ -365,8 +367,15 @@ class FaceComposer:
                 alpha = ImageEnhance.Brightness(alpha).enhance(layer.opacity)
                 part_image.putalpha(alpha)
             
+            # パーツの中心座標を左上角座標に変換
+            center_x, center_y = layer.position
+            left = center_x - part_image.width // 2
+            top = center_y - part_image.height // 2
+            
+            print(f"[DEBUG] {layer.category}: 中心({center_x}, {center_y}) → 左上({left}, {top}), サイズ({part_image.width}, {part_image.height})")
+            
             # オーバーレイに配置
-            overlay.paste(part_image, layer.position, part_image)
+            overlay.paste(part_image, (left, top), part_image)
             
             # ブレンドモードに応じて合成
             if layer.blend_mode == 'normal':

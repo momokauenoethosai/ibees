@@ -1,7 +1,9 @@
-# Portrait Selection AI
+# Vision RAG Face Composition System
 
-人の画像から特徴を抽出し、髪・目・鼻などのパーツごとに類似するパーツ画像を検索・表示するシステム。  
-バックエンドに **Google Cloud Vertex AI + BigQuery** を使用し、UI は Flask + HTML/JS で実装。
+**AI駆動の顔パーツ分析・合成システム with Gemini反復調整**
+
+人の画像から特徴を抽出し、髪・目・鼻などのパーツごとに類似するパーツ画像を検索・合成。さらにGeminiによる反復調整で元画像に近い自然な顔合成を実現。  
+バックエンドに **Vertex AI + BigQuery + Gemini API** を使用し、リアルタイムUI で完全自動化を実現。
 
 ---
 
@@ -28,6 +30,27 @@ pip install -r requirements.txt
 gcloud auth application-default login
 gcloud config set project vision-rag
 ```
+
+### 3. Webアプリケーション起動
+```bash
+cd webapp
+python app.py
+```
+**アクセス**: http://127.0.0.1:5000
+
+## 🎯 主要機能
+
+### 🤖 **AI分析・合成**
+1. **画像アップロード**: ドラッグ&ドロップまたはファイル選択
+2. **自動パーツ分析**: Gemini Visionによる9パーツ分析（髪、目、眉、鼻、口、耳、輪郭、等）
+3. **ベクトル検索**: BigQueryで700+パーツから最適選定
+4. **自動合成**: 選定パーツの即座合成・表示
+
+### 🔄 **Gemini反復調整**
+1. **🔄 反復調整ボタン**: 元画像との類似度向上
+2. **リアルタイム進捗**: 各反復の画像・調整指示をライブ表示
+3. **自動収束**: Geminiが満足するまで継続調整
+4. **履歴活用**: 過去の調整効果を学習して効率的改善
 
 ### 3. 実行
 ```bash

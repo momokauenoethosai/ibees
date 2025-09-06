@@ -185,15 +185,26 @@ def compose_face():
     """
     data = request.get_json()
     
+    # デバッグ用ログ
+    app.logger.info(f"Compose request data: {data}")
+    
     if not data or 'results_path' not in data or 'image_path' not in data:
+        app.logger.error(f"Missing parameters: data={data}")
         return jsonify({'error': 'Missing required parameters'}), 400
     
     results_path = data['results_path']
     image_path = data['image_path']
     timestamp = data.get('timestamp', datetime.now().strftime('%Y%m%d_%H%M%S'))
     
-    if not os.path.exists(results_path) or not os.path.exists(image_path):
-        return jsonify({'error': 'Input files not found'}), 404
+    app.logger.info(f"Compose paths: results={results_path}, image={image_path}")
+    
+    if not os.path.exists(results_path):
+        app.logger.error(f"Results file not found: {results_path}")
+        return jsonify({'error': f'Results file not found: {results_path}'}), 404
+        
+    if not os.path.exists(image_path):
+        app.logger.error(f"Image file not found: {image_path}")
+        return jsonify({'error': f'Image file not found: {image_path}'}), 404
     
     try:
         # Run face_parts_fitter.py as subprocess
@@ -215,15 +226,28 @@ def compose_face():
             '--out', output_path
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        app.logger.info(f"Executing command: {' '.join(cmd)}")
+        
+        # ワーキングディレクトリを明示的に設定
+        project_root = Path(__file__).parent.parent
+        app.logger.info(f"Working directory: {project_root}")
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(project_root))
+        
+        app.logger.info(f"Command stdout: {result.stdout}")
+        app.logger.info(f"Command stderr: {result.stderr}")
+        app.logger.info(f"Return code: {result.returncode}")
         
         if result.returncode != 0:
             error_msg = result.stderr if result.stderr else 'Face composition failed'
-            return jsonify({'error': error_msg}), 500
+            app.logger.error(f"Subprocess failed: {error_msg}")
+            return jsonify({'error': error_msg, 'returncode': result.returncode}), 500
         
         # Check if output file was created
         if not os.path.exists(output_path):
-            return jsonify({'error': 'Composed image was not created'}), 500
+            app.logger.error(f"Output file not created: {output_path}")
+            app.logger.error(f"Directory contents: {os.listdir(os.path.dirname(output_path)) if os.path.exists(os.path.dirname(output_path)) else 'Directory not found'}")
+            return jsonify({'error': 'Composed image was not created', 'output_path': output_path}), 500
         
         return jsonify({
             'status': 'success',

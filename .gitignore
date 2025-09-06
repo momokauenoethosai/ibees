@@ -42,3 +42,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Authentication
+webapp/auth_cache/
+webapp/credentials/
+webapp/.env
+webapp/credentials.zip

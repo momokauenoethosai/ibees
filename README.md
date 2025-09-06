@@ -1,157 +1,111 @@
-# Vision RAG Face Composition System
+# Face Analysis & Composition System
 
-**AI駆動の顔パーツ分析・合成システム with Gemini反復調整**
+AI駆動の顔パーツ分析・合成システム
 
-人の画像から特徴を抽出し、髪・目・鼻などのパーツごとに類似するパーツ画像を検索・合成。さらにGeminiによる反復調整で元画像に近い自然な顔合成を実現。  
-バックエンドに **Vertex AI + BigQuery + Gemini API** を使用し、リアルタイムUI で完全自動化を実現。
+人物の画像から顔の特徴を分析し、髪・目・鼻・口などのパーツごとに類似するパーツ画像を検索・合成。さらにGeminiによる調整で自然な顔合成を実現。
 
----
-
-## 📌 フェーズ1: 実行だけする人向け
-
-### 必要環境
-- Python 3.11+
-- Google Cloud 認証済み（権限は管理者が準備済み想定）
+## 🚀 クイックスタート
 
 ### 1. セットアップ
 ```bash
 git clone <このリポジトリURL>
-cd portrait_selection_ai_v1
+cd ibees
 
+# Python仮想環境作成
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-pip install -U pip
-pip install -r requirements.txt
+# 依存関係インストール
+pip install -r webapp/requirements.txt
 ```
 
-### 2. 認証（初回のみ）
+### 2. 認証設定
 ```bash
+# サービスアカウント認証（推奨）
+# webapp/credentials/service-account.json にサービスアカウントキーを配置
+
+# または、個人認証
 gcloud auth application-default login
-gcloud config set project vision-rag
+gcloud config set project <プロジェクトID>
 ```
 
-### 3. Webアプリケーション起動
+### 3. アプリケーション起動
 ```bash
 cd webapp
 python app.py
 ```
-**アクセス**: http://127.0.0.1:5000
+ブラウザで http://127.0.0.1:8080 にアクセス
 
 ## 🎯 主要機能
 
-### 🤖 **AI分析・合成**
-1. **画像アップロード**: ドラッグ&ドロップまたはファイル選択
-2. **自動パーツ分析**: Gemini Visionによる9パーツ分析（髪、目、眉、鼻、口、耳、輪郭、等）
-3. **ベクトル検索**: BigQueryで700+パーツから最適選定
-4. **自動合成**: 選定パーツの即座合成・表示
+### 1. 画像分析モード（認証必要）
+- 画像をアップロード
+- Gemini Visionによる顔パーツ分析（髪、目、眉、鼻、口、耳、輪郭など）
+- BigQueryベクトル検索で700+パーツから最適なものを選定
+- 選定したパーツを自動合成して表示
 
-### 🔄 **Gemini反復調整**
-1. **🔄 反復調整ボタン**: 元画像との類似度向上
-2. **リアルタイム進捗**: 各反復の画像・調整指示をライブ表示
-3. **自動収束**: Geminiが満足するまで継続調整
-4. **履歴活用**: 過去の調整効果を学習して効率的改善
+### 2. サンプルモード（認証不要）
+- 事前に分析済みのサンプルデータを使用
+- 認証なしで顔合成の機能を体験可能
 
-### 3. 実行
-```bash
-python webapp/app.py
+## 📁 プロジェクト構成
+
 ```
-ブラウザで http://127.0.0.1:5000 を開きます。  
-PNG 画像をアップロードすると、類似パーツが横並びで表示され、結果 JSON は outputs/ に保存されます。
-
----
-
-## 📌 フェーズ2: 開発・修正する人向け
-
-### ディレクトリ構成
-````bash
-portrait_selection_ai_v1/
-├─ kawakura/               # コア処理
-│  ├─ main/
-│  │   ├─ run_all_parts.py     # 特徴抽出 & 統合JSON
-│  │   ├─ utils_embed_bq.py    # Embedding検索 / BigQuery
-│  │   └─ common_config.py     # プロジェクト・モデル設定
-│  ├─ assets_png/              # パーツ画像
-├─ webapp/                 # Flask Web UI
-│  ├─ app.py               # サーバ
-│  └─ templates/index.html # UI
-├─ outputs/                # 実行結果 JSON
-├─ requirements.txt
-````
-
-### BigQuery 設定
-
-#### データセット作成
-```bash
-bq --location=asia-northeast1 mk --dataset vision-rag:parts
+ibees/
+├── webapp/                    # Webアプリケーション
+│   ├── app.py                # Flaskサーバー
+│   ├── sample_manager.py     # サンプルデータ管理
+│   ├── templates/            # HTMLテンプレート
+│   ├── static/              # 静的ファイル
+│   └── credentials/         # 認証情報
+├── kawakura/                # コア処理
+│   ├── main/
+│   │   ├── run_all_parts.py # 顔パーツ分析
+│   │   └── utils_*.py       # ユーティリティ
+│   ├── face_parts_fitter.py # パーツ合成
+│   └── assets_png/          # パーツ画像データ
+├── face_composer/           # 顔合成エンジン
+├── outputs/                 # 分析結果JSON
+└── tools/                   # 開発・デバッグツール
 ```
 
-#### テーブル作成
-```sql
-CREATE OR REPLACE TABLE `vision-rag.parts.catalog_img` (
-  part_id   STRING,
-  category  STRING,
-  part_num  INT64,
-  vector    ARRAY<FLOAT64>
-);
-```
+## 🔧 技術スタック
 
-#### データロード
+- **バックエンド**: Flask (Python)
+- **AI/ML**: 
+  - Google Vertex AI (Gemini Vision)
+  - BigQuery (ベクトル検索)
+  - MediaPipe (顔ランドマーク検出)
+- **フロントエンド**: HTML/CSS/JavaScript
+
+## 📝 デプロイ
+
+### Google Cloud Runへのデプロイ
 ```bash
-bq --location=asia-northeast1 load \
-  --source_format=NEWLINE_DELIMITED_JSON \
-  --schema=part_id:STRING,category:STRING,part_num:INTEGER,vector:FLOAT64 \
-  vision-rag:parts.catalog_img \
-  gs://parts-embeddings-vision-rag/parts_vectors_img.jsonl
-```
+# Dockerイメージビルド
+gcloud builds submit --tag gcr.io/<プロジェクトID>/face-analysis-app
 
-### 修正ポイント
-- 特徴抽出モデル: kawakura/main/run_all_parts.py  
-- 検索ロジック: kawakura/main/utils_embed_bq.py  
-- UI 表示: webapp/templates/index.html  
-- カテゴリ名ずれ対策: CATEGORY_DB_ALIAS で mouth → mouse など対応
-
-### デプロイ (Cloud Run)
-```bash
-gcloud builds submit \
-  --tag asia-northeast1-docker.pkg.dev/vision-rag/containers/portrait-ui:latest
-
-gcloud run deploy portrait-ui \
-  --image asia-northeast1-docker.pkg.dev/vision-rag/containers/portrait-ui:latest \
+# Cloud Runへデプロイ
+gcloud run deploy face-analysis-app \
+  --image gcr.io/<プロジェクトID>/face-analysis-app \
+  --platform managed \
   --region asia-northeast1 \
   --allow-unauthenticated
 ```
 
-### 出力例（JSON）
-```json
-{
-  "input_image": "made_pictures/1.png",
-  "meta": { "top_k": 1, "min_score": 0.0 },
-  "parts": {
-    "hair": {
-      "extracted": { "summary": "Blunt bob with bangs" },
-      "search": {
-        "top_hits": [
-          {"part_id": "hair_153", "score": 0.1157}
-        ]
-      },
-      "selected": {
-        "part_id_full": "hair_153",
-        "part_num": 153,
-        "score": 0.1157
-      }
-    },
-    "eye": { ... }
-  },
-  "compact": {
-    "hair": { "part_num": 153, "score": 0.1157 },
-    "eye": { "part_num": 87, "score": 0.1038 }
-  }
-}
+## 🔐 認証について
+
+### サービスアカウント認証（デプロイ用）
+1. GCPでサービスアカウントを作成
+2. 必要な権限を付与（Vertex AI User、BigQuery Data Viewer等）
+3. JSONキーをダウンロード
+4. `webapp/credentials/service-account.json`に配置
+
+### 開発時の認証
+```bash
+gcloud auth application-default login
 ```
 
-### 今後の改善TODO
-- mouth (→mouse) のカテゴリマッピング調整
-- UI: スコア色分け・スコア閾値調整
-- Embeddings の更新自動化（定期ジョブ）
-- Cloud Run 公開時のアクセス制御（認証あり/なし切替）
+## 📄 ライセンス
+
+このプロジェクトは非公開プロジェクトです。

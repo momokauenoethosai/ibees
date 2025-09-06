@@ -1,5 +1,5 @@
 {
-  "input_image": "/Users/uenomomoka/Desktop/Projects/vision_rag/uploads/upload_20250830_231953.png",
+  "input_image": "uploads/upload_20250830_231953.png",
   "meta": {
     "top_k": 1,
     "min_score": 0.0

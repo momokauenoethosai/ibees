@@ -131,30 +131,15 @@ def _safe_search(category: str, phrase: str, top_k: int, min_score: float) -> Di
         return {"ok": False, "err": f"{type(e).__name__}: {e}", "hits": []}
 
 
-def run_once(img_path: Path, top_k: int = DEFAULT_TOP_K, min_score: float = MIN_SCORE, progress_callback=None) -> Dict[str, Any]:
+def run_once(img_path: Path, top_k: int = DEFAULT_TOP_K, min_score: float = MIN_SCORE) -> Dict[str, Any]:
     """画像1枚に対する全カテゴリ処理のメイン本体。統合JSONを返す。"""
     result: Dict[str, Any] = {
         "input_image": str(img_path),
         "meta": {"top_k": top_k, "min_score": min_score},
         "parts": {},
     }
-    
-    total_categories = len(EXTRACTORS)
-    current_index = 0
 
     for category, mod in EXTRACTORS.items():
-        current_index += 1
-        
-        # 進捗コールバック送信
-        if progress_callback:
-            progress_callback({
-                "status": "processing",
-                "current_part": category,
-                "progress": current_index,
-                "total": total_categories,
-                "percentage": int((current_index / total_categories) * 100)
-            })
-        
         # 1) 特徴抽出
         ext = _safe_extract(mod, img_path)
         summary = ext.get("summary", "")
@@ -164,27 +149,11 @@ def run_once(img_path: Path, top_k: int = DEFAULT_TOP_K, min_score: float = MIN_
         # (A) 特徴が全く無い → スキップ
         if not phrase and not tags and not summary:
             print(f"[{category}] skipped (no features)")
-            if progress_callback:
-                progress_callback({
-                    "status": "skipped",
-                    "current_part": category,
-                    "reason": "no features",
-                    "progress": current_index,
-                    "total": total_categories
-                })
             continue
 
-        # (B) "無し"と判定（例：no facial hair / no accessories） → スキップ
+        # (B) “無し”と判定（例：no facial hair / no accessories） → スキップ
         if looks_negative(category, summary, tags):
             print(f"[{category}] skipped (negative: none)")
-            if progress_callback:
-                progress_callback({
-                    "status": "skipped",
-                    "current_part": category,
-                    "reason": "negative detection",
-                    "progress": current_index,
-                    "total": total_categories
-                })
             continue
 
         # 2) 類似検索（カテゴリごとの最小スコアで弱マッチ除去）
@@ -199,14 +168,6 @@ def run_once(img_path: Path, top_k: int = DEFAULT_TOP_K, min_score: float = MIN_
         # (C) 弱マッチのみ → スキップ
         if not best:
             print(f"[{category}] skipped (weak match)")
-            if progress_callback:
-                progress_callback({
-                    "status": "skipped",
-                    "current_part": category,
-                    "reason": "weak match",
-                    "progress": current_index,
-                    "total": total_categories
-                })
             continue
 
         # 3) まとめ（selected は単一オブジェクト）
@@ -227,17 +188,6 @@ def run_once(img_path: Path, top_k: int = DEFAULT_TOP_K, min_score: float = MIN_
 
         result["parts"][category] = part_out
         print(f"[{category}] phrase='{phrase}' -> best={best['part_id']} ({best['score']:.4f})")
-        
-        # 成功時の進捗コールバック
-        if progress_callback:
-            progress_callback({
-                "status": "completed",
-                "current_part": category,
-                "part_id": best["part_id"],
-                "score": best["score"],
-                "progress": current_index,
-                "total": total_categories
-            })
 
     # 4) UI向けの軽量 JSON（part_num/score のみ）
     compact = {}

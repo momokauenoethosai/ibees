@@ -1,0 +1,94 @@
+[
+  {
+    "id": "sample1",
+    "title": "サンプル1: ショートボブ",
+    "description": "ブラントカットのショートボブスタイル",
+    "thumbnail": "/static/samples/sample1_thumb.jpg",
+    "image": "/static/samples/sample1.jpg",
+    "json_data": {
+      "input_image": "/static/samples/sample1.jpg",
+      "compact": {
+        "hair": {
+          "part_num": 153,
+          "score": 0.1319817725613839
+        },
+        "eye": {
+          "part_num": 50,
+          "score": 0.09551670394030927
+        },
+        "eyebrow": {
+          "part_num": 81,
+          "score": 0.09114062425362447
+        },
+        "nose": {
+          "part_num": 52,
+          "score": 0.11309688124421699
+        },
+        "mouth": {
+          "part_num": 78,
+          "score": 0.127821166221499
+        },
+        "ear": {
+          "part_num": 17,
+          "score": 0.0748227511462647
+        },
+        "outline": {
+          "part_num": 17,
+          "score": 0.09808969030537454
+        },
+        "acc": {
+          "part_num": 16,
+          "score": 0.09783928763816892
+        }
+      },
+      "meta": {
+        "top_k": 1,
+        "min_score": 0.0
+      }
+    }
+  },
+  {
+    "id": "sample2",
+    "title": "サンプル2: ミディアムウェーブ",
+    "description": "ウェーブのかかったミディアムスタイル",
+    "thumbnail": "/static/samples/sample2_thumb.jpg",
+    "image": "/static/samples/sample2.jpg",
+    "json_data": {
+      "input_image": "/static/samples/sample2.jpg",
+      "compact": {
+        "hair": {
+          "part_num": 262,
+          "score": 0.07952350720606914
+        },
+        "eye": {
+          "part_num": 20,
+          "score": 0.09185209283270729
+        },
+        "eyebrow": {
+          "part_num": 95,
+          "score": 0.09837088611722362
+        },
+        "nose": {
+          "part_num": 48,
+          "score": 0.12108299913309371
+        },
+        "mouth": {
+          "part_num": 80,
+          "score": 0.07499396302677233
+        },
+        "ear": {
+          "part_num": 17,
+          "score": 0.062379242202349715
+        },
+        "outline": {
+          "part_num": 19,
+          "score": 0.06840372089679954
+        }
+      },
+      "meta": {
+        "top_k": 1,
+        "min_score": 0.0
+      }
+    }
+  }
+]

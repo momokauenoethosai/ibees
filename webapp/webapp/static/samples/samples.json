@@ -1,0 +1,122 @@
+[
+  {
+    "id": "sample1",
+    "title": "サンプル1: ビジネス",
+    "description": "フォーマルな雰囲気",
+    "thumbnail": "/static/samples/sample1_thumb.jpg",
+    "image": "/static/samples/sample1.jpg",
+    "json_data": {
+      "input_image": "/static/samples/sample1.jpg",
+      "compact": {
+        "hair": {
+          "part_num": 15,
+          "score": 0.95
+        },
+        "eye": {
+          "part_num": 12,
+          "score": 0.92
+        },
+        "eyebrow": {
+          "part_num": 45,
+          "score": 0.9
+        },
+        "nose": {
+          "part_num": 23,
+          "score": 0.89
+        },
+        "mouth": {
+          "part_num": 34,
+          "score": 0.88
+        },
+        "ear": {
+          "part_num": 41,
+          "score": 0.87
+        },
+        "outline": {
+          "part_num": 32,
+          "score": 0.86
+        }
+      }
+    }
+  },
+  {
+    "id": "sample2",
+    "title": "サンプル2: カジュアル",
+    "description": "親しみやすい印象",
+    "thumbnail": "/static/samples/sample2_thumb.jpg",
+    "image": "/static/samples/sample2.jpg",
+    "json_data": {
+      "input_image": "/static/samples/sample2.jpg",
+      "compact": {
+        "hair": {
+          "part_num": 29,
+          "score": 0.94
+        },
+        "eye": {
+          "part_num": 38,
+          "score": 0.91
+        },
+        "eyebrow": {
+          "part_num": 93,
+          "score": 0.89
+        },
+        "nose": {
+          "part_num": 66,
+          "score": 0.9
+        },
+        "mouth": {
+          "part_num": 80,
+          "score": 0.88
+        },
+        "ear": {
+          "part_num": 17,
+          "score": 0.85
+        },
+        "outline": {
+          "part_num": 19,
+          "score": 0.87
+        }
+      }
+    }
+  },
+  {
+    "id": "sample3",
+    "title": "サンプル3: クリエイティブ",
+    "description": "個性的なスタイル",
+    "thumbnail": "/static/samples/sample3_thumb.jpg",
+    "image": "/static/samples/sample3.jpg",
+    "json_data": {
+      "input_image": "/static/samples/sample3.jpg",
+      "compact": {
+        "hair": {
+          "part_num": 42,
+          "score": 0.93
+        },
+        "eye": {
+          "part_num": 55,
+          "score": 0.9
+        },
+        "eyebrow": {
+          "part_num": 67,
+          "score": 0.88
+        },
+        "nose": {
+          "part_num": 81,
+          "score": 0.91
+        },
+        "mouth": {
+          "part_num": 56,
+          "score": 0.87
+        },
+        "ear": {
+          "part_num": 8,
+          "score": 0.86
+        },
+        "outline": {
+          "part_num": 51,
+          "score": 0.85
+        }
+      }
+    }
+  }
+]

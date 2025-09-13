@@ -406,7 +406,7 @@ if __name__ == '__main__':
     
     print("=" * 50)
     print("🔐 Face Analysis & Composition System")
-    print("Server running at http://127.0.0.1:8080")
+    print("Server running at http://127.0.0.1:8081")
     print("=" * 50)
     
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8081)
